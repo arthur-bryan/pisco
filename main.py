@@ -1,47 +1,62 @@
-from telnetlib import Telnet
+from managers.device_managers import IndividualDevice
 from time import sleep
-from getpass import getpass
-from validations import validate_ip
+import sys
+import os
 
-class IndividualDevice:
-    def __init__(self, enable_password=None):
-        self.ip_addr = None
-        self.vty_username = None
-        self.vty_password = None
-        self.enable_password = None
+EXECUTABLE_PATH = os.path.abspath(__file__)
+CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
+FILES_FOLDER = os.path.join(CURRENT_DIR, "files")
 
 
-    def get_device_info(self):
-        while self.ip_addr == None:
-            try:
-                self.ip_addr = validate_ip(input("[->] IP address of the device: "))[1]
-            except ValueError as e:
-                print(e)
-        self.vty_username = input("[->] VTY Username: ")
-        self.vty_password = getpass(prompt="[->] VTY Password: ")
-        self.enable_password = getpass(prompt="[->] Enable secret: ")
+def menu():
+    choice = int(input("""
+
+==================== Pisco ====================
+
+[0] Configure a individual device
+[1] Configure a list of devices
+[2] Help
+[3] Exit
+
+--> """))
+    while choice not in (0, 1, 2, 3):
+        menu()
+    if choice == 0:
+        clear()
+        device = IndividualDevice()
+        device.connection()
+    elif choice == 1:
+        print(" " * 20 + "Configuring a lot of devices...")
+    elif choice == 2:
+        clear()
+        with open(os.path.join(FILES_FOLDER, "help.txt"), 'r') as file:
+            print(file.read())
+            file.close()
+            menu()
+    elif choice == 3:
+        print("[...] Exiting...")
+        sleep(1.5)
+        sys.exit(0)
 
 
-    def telnet_connection(self):
-        self.get_device_info()
-        tn = Telnet(self.ip_addr, "23")
-        tn.set_debuglevel(1)
-        tn.read_until(b"Username:", 2)
-        tn.write(self.vty_username.encode('ascii') + b"\n")
-        tn.read_until(b"Password:", 2)
-        tn.write(self.vty_password.encode('ascii') + b"\n")
-        sleep(1)
-        while True:
-            print(tn.read_very_eager())
-            tn.write(input("Command: ").encode('ascii') + b"\n")
-            sleep(1)
-        tn.close()
+def clear():
+    """
+    '\33[<N>D' = move the cursor backward N columns
+    '\33[<N>A' = move the cursor up A lines
+    '\33[2J' = clear screen and move to 0,0
+    """
+    sys.stdout.write("\033[1200D\33[1200A\033[2J")
+    sys.stdout.flush()
+
 
 def main():
-    device = IndividualDevice()
-    device.telnet_connection()
+    try:
+        menu()
+    except KeyboardInterrupt:
+        print("\n[...] Exiting...")
+        sleep(1.5)
+        sys.exit(0)
 
 
 if __name__ == '__main__':
     main()
-
