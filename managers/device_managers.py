@@ -92,30 +92,47 @@ class IndividualDevice:
         clear()
         variables = {"DEVICE_HOSTNAME": "",
                      "ENABLE_PASSWORD": self.enable_password}
-        if code == 1:
-            print(" " * 20 + "Setting HOSTNAME\n")
-            variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
         with open(os.path.join(FILES_FOLDER, 'config.json'), "r") as file:
             data = json.load(file)
-            commands = list(data['SET_HOSTNAME'].values())[0]
-            keys = list(variables.keys())
-            for command in commands:
-                if keys[0] in str(command):
-                    self.obj_connect.write(command.replace(keys[0], variables[keys[0]]).encode('ascii'))
-                    print(self.obj_connect.read_very_eager().decode('ascii'))
-                    sleep(1)
-                elif keys[1] in str(command):
-                    self.obj_connect.write(command.replace(keys[1], variables[keys[1]]).encode('ascii'))
-                    print(self.obj_connect.read_very_eager().decode('ascii'))
-                    sleep(1)
-                else:
-                    self.obj_connect.write(command.encode('ascii'))
-                    print(self.obj_connect.read_very_eager().decode('ascii'))
-                    sleep(1)
-            self.obj_connect.close()
-            print("\n" + " " * 20 + "Hostname set!\n")
-            sleep(2)
-            self.configure_device(self.scripts_options())
+        if code == 0:
+            self.run_default_setup(data, variables)
+        elif code == 1:
+            self.run_hostname_setup(data, variables)
+
+    def run_default_setup(self, json_data, variables):
+        print(" " * 20 + "Runnning default setup\n")
+        commands = list(json_data['DEFAULT_CONFIG'].values())[0]
+        self.send_commands(commands, variables)
+        print("\n" + " " * 20 + "Default configs set!\n")
+        sleep(2)
+        self.configure_device(self.scripts_options())
+
+    def run_hostname_setup(self, json_data, variables):
+        print(" " * 20 + "Setting HOSTNAME\n")
+        variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
+        commands = list(json_data['SET_HOSTNAME'].values())[0]
+        self.send_commands(commands, variables)
+        print("\n" + " " * 20 + "Hostname set!\n")
+        sleep(2)
+        self.configure_device(self.scripts_options())
+
+    def send_commands(self, commands, variables):
+        keys = list(variables.keys())
+        for command in commands:
+            if keys[0] in str(command):
+                self.obj_connect.write(command.replace(keys[0], variables[keys[0]]).encode('ascii'))
+                print(self.obj_connect.read_very_eager().decode('ascii'))
+                sleep(1)
+            elif keys[1] in str(command):
+                self.obj_connect.write(command.replace(keys[1], variables[keys[1]]).encode('ascii'))
+                print(self.obj_connect.read_very_eager().decode('ascii'))
+                sleep(1)
+            else:
+                self.obj_connect.write(command.encode('ascii'))
+                print(self.obj_connect.read_very_eager().decode('ascii'))
+                sleep(1)
+        self.obj_connect.close()
+
 
 def clear():
     """
