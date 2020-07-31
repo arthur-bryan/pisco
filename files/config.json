@@ -1,8 +1,7 @@
 {
-	"CODE_1":{
+	"SET_HOSTNAME":{
 		"commands": [
-			"\benable\n",
-			"\bENABLE_PASSWORD\n",
+			"\b\n",
 			"\bconfigure terminal\n",
 			"\bhostname DEVICE_HOSTNAME\n",
 			"\bexit\n",
