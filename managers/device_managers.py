@@ -1,7 +1,8 @@
 from telnetlib import Telnet
 from getpass import getpass
-from validations import validate_ip
+from files.validations import validate_ip
 from time import sleep
+from functools import partial
 import sys
 import os
 import json
@@ -16,13 +17,13 @@ class IndividualDevice:
         self.vty_username = ""
         self.vty_password = ""
         self.enable_password = ""
-        self.current_conn_type = ""
+        self.conn_type = ""
         self.obj_connect = None
 
     def get_device_info(self):
         self.telnet_or_ssh()
         clear()
-        print(" " * 20 + "CONFIGURING INDIVIDUAL DEVICE\n")
+        print("\n" + " " * 20 + "CONFIGURING INDIVIDUAL DEVICE\n")
         while self.ip_addr == "":
             try:
                 self.ip_addr = validate_ip(input("[->] IP address of the device: "))[1]
@@ -37,102 +38,111 @@ class IndividualDevice:
     def connection(self):
         self.get_device_info()
         if self.current_conn_type == "23":
-            self.obj_connect = Telnet(self.ip_addr, self.current_conn_type, 5)
+            self.obj_connect = Telnet(self.ip_addr, self.conn_type, 5)
             self.obj_connect.read_until(b"Username:", 2)
             self.obj_connect.write(self.vty_username.encode('ascii') + b"\n")
+            sleep(0.5)
             self.obj_connect.read_until(b"Password:", 2)
             self.obj_connect.write(self.vty_password.encode('ascii') + b"\n")
-            sleep(1)
+            sleep(0.5)
             self.obj_connect.write(b"enable\n")
             self.obj_connect.read_until(b"Password:", 2)
             self.obj_connect.write(self.enable_password.encode('ascii') + b"\n")
-            sleep(1)
-            self.configure_device(self.scripts_options())
+            sleep(0.5)
+            self.configure_device()
         else:
             print("SSH was choosen :)")
 
     def telnet_or_ssh(self):
         clear()
-        option = int(input("""
-    \n\r[0] Configure over Telnet
-    \r[1] Configure over SSH\n
-    \r--> """))
-        while option not in (0, 1):
-            clear()
+        try:
             option = int(input("""
-    \n\r[0] Configure over Telnet
-    \r[1] Configure over SSH\n
-    \r--> """))
-        if option == 0:
-            self.current_conn_type = "23"
+            \r                   CONNECTION TYPE\n
+            \r[0] Configure over Telnet
+            \r[1] Configure over SSH\n
+            \r--> """))
+        except ValueError:
+           self.telnet_or_ssh()
         else:
-            self.current_conn_type = "22"
+            if option not in (0, 1):
+                self.telnet_or_ssh()
+            else:
+                if option == 0:
+                    self.current_conn_type = "23"
+                else:
+                    self.current_conn_type = "22"
 
     def scripts_options(self):
         clear()
-        choice = int(input("""
-    \n\r=============== SCRIPTS ===================
-
-    \r[0] Load default
-    \r[1] Set Hostname
-    \r[2] Create VLANs
-    \r[3] Setup VLANs
-    \r[4] Setup SSH access
-    \r[5] VTP mode access
-    \r[6] VTP mode trunk
-    \r[7] Erase NVRAM
-    \r[8] Exit
-
-    \r--> """))
-        while choice not in list(range(9)):
+        try:
+            choice = int(input("""
+            \r                    SCRIPTS\n
+            \r[0] Load default
+            \r[1] Set Hostname
+            \r[2] Create VLANs
+            \r[3] Setup VLANs
+            \r[4] Setup SSH access
+            \r[5] VTP mode access
+            \r[6] VTP mode trunk
+            \r[7] Erase NVRAM
+            \r[8] Show interfaces info
+            \r[9] Exit\n
+            \r--> """))
+        except ValueError:
             self.scripts_options()
-        return choice
+        else:
+            return choice
 
-    def configure_device(self, code):
+    def configure_device(self):
+        code = ""
+        while code not in list(range(10)):
+            code = self.scripts_options()
         clear()
         variables = {"DEVICE_HOSTNAME": "",
                      "ENABLE_PASSWORD": self.enable_password}
+        keys = list(variables.keys())
         with open(os.path.join(FILES_FOLDER, 'config.json'), "r") as file:
             data = json.load(file)
-        if code == 0:
-            self.run_default_setup(data, variables)
-        elif code == 1:
-            self.run_hostname_setup(data, variables)
+            if code == 0:
+                print("\n" + " " * 20 + "DEFAULT CONFIG\n")
+                commands = list(data['DEFAULT_CONFIG'].values())[0]
+                [self.send_command(command, keys, variables) for command in commands]
+                print("\n\n" + " " * 20 + "Default config done!")
+                sleep(2)
+                self.configure_device()
+            elif code == 1:
+                print("\n" + " " * 20 + "SET HOSTNAME\n")
+                variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
+                commands = list(data['SET_HOSTNAME'].values())[0]
+                [self.send_command(command, keys, variables) for command in commands]
+                print("\n\n" + " " * 20 + "Hostname config done!")
+                sleep(2)
+                self.configure_device()
 
-    def run_default_setup(self, json_data, variables):
-        print(" " * 20 + "Runnning default setup\n")
-        commands = list(json_data['DEFAULT_CONFIG'].values())[0]
-        self.send_commands(commands, variables)
-        print("\n" + " " * 20 + "Default configs set!\n")
-        sleep(2)
-        self.configure_device(self.scripts_options())
 
-    def run_hostname_setup(self, json_data, variables):
-        print(" " * 20 + "Setting HOSTNAME\n")
-        variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
-        commands = list(json_data['SET_HOSTNAME'].values())[0]
-        self.send_commands(commands, variables)
-        print("\n" + " " * 20 + "Hostname set!\n")
-        sleep(2)
-        self.configure_device(self.scripts_options())
+    def send_command(self, command, keys, variables):
+        found_key = list(filter(lambda key : key in command, keys))		# search for strings to be replaced on command
+        if len(found_key) > 0:		# if there is string to replace...
+            self.obj_connect.write(command.replace(found_key[0], variables[found_key[0]]).encode('ascii'))
+            print(self.obj_connect.read_very_eager().decode('ascii'), end="")
+            sleep(1)
+        else:
+            self.obj_connect.write(command.encode('ascii'))
+            print(self.obj_connect.read_very_eager().decode('ascii'), end="")
+            sleep(1)
 
-    def send_commands(self, commands, variables):
-        keys = list(variables.keys())
-        for command in commands:
-            if keys[0] in str(command):
-                self.obj_connect.write(command.replace(keys[0], variables[keys[0]]).encode('ascii'))
-                print(self.obj_connect.read_very_eager().decode('ascii'))
-                sleep(1)
-            elif keys[1] in str(command):
-                self.obj_connect.write(command.replace(keys[1], variables[keys[1]]).encode('ascii'))
-                print(self.obj_connect.read_very_eager().decode('ascii'))
-                sleep(1)
-            else:
-                self.obj_connect.write(command.encode('ascii'))
-                print(self.obj_connect.read_very_eager().decode('ascii'))
-                sleep(1)
-        self.obj_connect.close()
+    def identify_errors(self):
+        console_output = self.obj_connect.read_eager().decode('ascii')
+        if 'Bad secrets' in console_output:
+                print("\n[!] Wrong enable secret! Connect again.")
+                sleep(2)
+                self.get_device_info()
 
+def exit():
+    print("[...] Exiting...")
+    sleep(0.5)
+    clear()
+    sys.exit(0)
 
 def clear():
     """

@@ -10,15 +10,16 @@ FILES_FOLDER = os.path.join(CURRENT_DIR, "files")
 
 def menu():
     clear()
-    choice = int(input("""
-    \r==================== Pisco ====================
-
-    \r[0] Configure a individual device
-    \r[1] Configure a list of devices
-    \r[2] Help
-    \r[3] Exit
-
-    \r--> """))
+    try:
+        choice = int(input("""
+        \r==================== Pisco ====================\n
+        \r[0] Configure a individual device
+        \r[1] Configure a list of devices
+        \r[2] Help
+        \r[3] Exit\n
+        \r--> """))
+    except ValueError:
+        menu()
     while choice not in (0, 1, 2, 3):
         menu()
     if choice == 0:
@@ -35,10 +36,14 @@ def menu():
             file.close()
             menu()
     elif choice == 3:
-        print("[...] Exiting...")
-        sleep(0.5)
-        clear()
-        sys.exit(0)
+        exit()
+
+
+def exit():
+    print("[...] Exiting...")
+    sleep(0.5)
+    clear()
+    sys.exit(0)
 
 
 def clear():
