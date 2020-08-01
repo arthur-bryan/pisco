@@ -20,26 +20,27 @@ def menu():
         \r--> """))
     except ValueError:
         menu()
-    while choice not in (0, 1, 2, 3):
-        menu()
-    if choice == 0:
-        clear()
-        device = IndividualDevice()
-        device.connection()
-    elif choice == 1:
-        print(" " * 20 + "Configuring a lot of devices...")
-    elif choice == 2:
-        clear()
-        with open(os.path.join(FILES_FOLDER, "help.txt"), 'r') as file:
-            print(file.read())
-            input("\n[...]Press any key to quit..")
-            file.close()
+    else:
+        if choice not in (0, 1, 2, 3):
             menu()
-    elif choice == 3:
-        exit()
+        else:
+            if choice == 0:
+                device = IndividualDevice()
+                device.connection()
+            elif choice == 1:
+                print(" " * 20 + "Configuring a lot of devices...")
+            elif choice == 2:
+                clear()
+                with open(os.path.join(FILES_FOLDER, "help.txt"), 'r') as file:
+                    print(file.read())
+                    input("\n[...]Press any key to quit..")
+                    file.close()
+                    menu()
+            elif choice == 3:
+                close()
 
 
-def exit():
+def close():
     print("[...] Exiting...")
     sleep(0.5)
     clear()
@@ -61,10 +62,7 @@ def main():
         clear()
         menu()
     except KeyboardInterrupt:
-        print("\n[...] Exiting...")
-        sleep(0.5)
-        clear()
-        sys.exit(0)
+        close()
 
 
 if __name__ == '__main__':
