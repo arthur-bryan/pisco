@@ -2,7 +2,6 @@ from telnetlib import Telnet
 from getpass import getpass
 from files.validations import validate_ip
 from time import sleep
-from functools import partial
 import sys
 import os
 import json
@@ -37,7 +36,7 @@ class IndividualDevice:
 
     def connection(self):
         self.get_device_info()
-        if self.current_conn_type == "23":
+        if self.conn_type == "23":
             self.obj_connect = Telnet(self.ip_addr, self.conn_type, 5)
             self.obj_connect.read_until(b"Username:", 2)
             self.obj_connect.write(self.vty_username.encode('ascii') + b"\n")
@@ -62,15 +61,15 @@ class IndividualDevice:
             \r[1] Configure over SSH\n
             \r--> """))
         except ValueError:
-           self.telnet_or_ssh()
+            self.telnet_or_ssh()
         else:
             if option not in (0, 1):
                 self.telnet_or_ssh()
             else:
                 if option == 0:
-                    self.current_conn_type = "23"
+                    self.conn_type = "23"
                 else:
-                    self.current_conn_type = "22"
+                    self.conn_type = "22"
 
     def scripts_options(self):
         clear()
@@ -119,9 +118,8 @@ class IndividualDevice:
                 sleep(2)
                 self.configure_device()
 
-
     def send_command(self, command, keys, variables):
-        found_key = list(filter(lambda key : key in command, keys))		# search for strings to be replaced on command
+        found_key = list(filter(lambda key: key in command, keys))		# search for strings to be replaced on command
         if len(found_key) > 0:		# if there is string to replace...
             self.obj_connect.write(command.replace(found_key[0], variables[found_key[0]]).encode('ascii'))
             print(self.obj_connect.read_very_eager().decode('ascii'), end="")
@@ -134,15 +132,10 @@ class IndividualDevice:
     def identify_errors(self):
         console_output = self.obj_connect.read_eager().decode('ascii')
         if 'Bad secrets' in console_output:
-                print("\n[!] Wrong enable secret! Connect again.")
-                sleep(2)
-                self.get_device_info()
+            print("\n[!] Wrong enable secret! Connect again.")
+            sleep(2)
+            self.get_device_info()
 
-def exit():
-    print("[...] Exiting...")
-    sleep(0.5)
-    clear()
-    sys.exit(0)
 
 def clear():
     """
