@@ -2,19 +2,19 @@
 	"DEFAULT_CONFIG": {
 		"commands": [
 			"\b\n",
-			"\bend\n",
 			"\bconfigure terminal\n",
-			"\blogging synchronous\n",
-			"\bno domain-lookup\n",
+			"\bno ip domain-lookup\n",
 			"\bline console 0\n",
+			"\blogging synchronous\n",
 			"\bexec-timeout 0 0\n",
 			"\bexit\n",
 			"\bline vty 0 4\n",
+            "\blogging synchronous\n",
 			"\bexec-timeout 0 0\n",
-			"\bexit\n",
+			"\bend\n",
 			"\bcopy running-config startup-config\n",
-			"\b\n"
-		]
+			"\b\n",
+			"\b\n"]
 	},
 
 	"SET_HOSTNAME":{
@@ -24,6 +24,7 @@
 			"\bhostname DEVICE_HOSTNAME\n",
 			"\bexit\n",
 			"\bcopy running-config startup-config\n",
+			"\b\n",
 			"\b\n"]
 	}
 }
