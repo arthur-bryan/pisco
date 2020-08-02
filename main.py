@@ -1,7 +1,7 @@
-from managers.device_managers import IndividualDevice
-from time import sleep
-import sys
 import os
+from modules import auxiliar_functions
+from modules.device_manager import Manager
+
 
 EXECUTABLE_PATH = os.path.abspath(__file__)
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -9,60 +9,40 @@ FILES_FOLDER = os.path.join(CURRENT_DIR, "files")
 
 
 def menu():
-    clear()
+    auxiliar_functions.clear()
     try:
         choice = int(input("""
-        \r==================== Pisco ====================\n
-        \r[0] Configure a individual device
-        \r[1] Configure a list of devices
-        \r[2] Help
-        \r[3] Exit\n
+        \r==================== Pisco | v0.1 ====================\n
+        \r[0] Start
+        \r[1] Help
+        \r[2] Exit\n
         \r--> """))
     except ValueError:
         menu()
     else:
-        if choice not in (0, 1, 2, 3):
+        if choice not in range(3):
             menu()
         else:
             if choice == 0:
-                device = IndividualDevice()
-                device.connection()
+                device_manager = Manager()
+                device_manager.start_manager()
             elif choice == 1:
-                print(" " * 20 + "Configuring a lot of devices...")
-            elif choice == 2:
-                clear()
+                auxiliar_functions.clear()
                 with open(os.path.join(FILES_FOLDER, "help.txt"), 'r') as file:
                     print(file.read())
                     input("\n[...]Press any key to quit..")
                     file.close()
                     menu()
-            elif choice == 3:
-                close()
-
-
-def close():
-    print("[...] Exiting...")
-    sleep(0.5)
-    clear()
-    sys.exit(0)
-
-
-def clear():
-    """
-    '\33[<N>D' = move the cursor backward N columns
-    '\33[<N>A' = move the cursor up A lines
-    '\33[2J' = clear screen and move to 0,0
-    """
-    sys.stdout.write("\033[1200D\33[1200A\033[2J")
-    sys.stdout.flush()
+            elif choice == 2:
+                auxiliar_functions.close()
 
 
 def main():
     try:
-        clear()
+        auxiliar_functions.clear()
         menu()
     except KeyboardInterrupt:
-        close()
+        auxiliar_functions.close()
 
 
 if __name__ == '__main__':
