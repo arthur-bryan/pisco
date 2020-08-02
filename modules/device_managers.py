@@ -18,7 +18,7 @@ class IndividualDevice:
         self.enable_password = ""
         self.conn_type = ""
         self.obj_connect = None
-
+"""
     def get_device_info(self):
         self.telnet_or_ssh()
         clear()
@@ -128,7 +128,7 @@ class IndividualDevice:
             self.obj_connect.write(command.encode('ascii'))
             print(self.obj_connect.read_very_eager().decode('ascii'), end="")
             sleep(1)
-
+"""
     def identify_errors(self):
         console_output = self.obj_connect.read_eager().decode('ascii')
         if 'Bad secrets' in console_output:
@@ -136,12 +136,3 @@ class IndividualDevice:
             sleep(2)
             self.get_device_info()
 
-
-def clear():
-    """
-    '\33[<N>D' = move the cursor backward N columns
-    '\33[<N>A' = move the cursor up A lines
-    '\33[2J' = clear screen and move to 0,0
-    """
-    sys.stdout.write("\033[1200D\33[1200A\033[2J")
-    sys.stdout.flush()
