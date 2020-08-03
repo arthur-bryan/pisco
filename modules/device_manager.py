@@ -64,7 +64,10 @@ class Manager:
     def create_individual_device_obj(self):
         device_type = self.get_device_type()
         auxiliar_functions.clear()
-        print("\n" + " " * 20 + "CONFIGURING INDIVIDUAL DEVICE\n")
+        print("""\n                      CONFIGURING INDIVIDUAL DEVICE\n
+        \r          IMPORTANT: Make sure you are typing correct credentials
+        \r                  to prevent miss configuration commands.
+        \r            Follow the comportament of the scripts if possible.\n""")
         while True:
             try:
                 ip_addr = auxiliar_functions.validate_ip(input("[->] IP address of the device: "))
@@ -153,6 +156,7 @@ class Manager:
         if self.connection_type == "telnet":
             try:
                 self.obj_connect = Telnet(device.ip_address, "23", 5)
+                #	self.obj_connect.set_debuglevel(1)
             except OSError:
                 print("\n[!] Could not connect. Host is unreachable.")
                 sleep(2)
@@ -182,6 +186,21 @@ class Manager:
             self.obj_connect.write(command.encode('ascii'))
             print(self.obj_connect.read_very_eager().decode('ascii'), end="")
             sleep(1)
+
+    def identify_errors(self):
+        errors_dict = {'% Login invalid': '\n[!] Invalid VTY login credentials!',
+                       '% Bad passwords': '\n[!] Invalid VTY password!',
+                       '% Bad secrets': '\n[!] Invalid secret!',
+                       '% No password set': '\n[!] No enable password configured on device!',
+                       'Translating': '\n[!] Username no configured on device'}
+        errors_keys = [key for key in errors_dict]
+        error = list(filter(lambda error: error in self.obj_connect.read_all().decode('ascii'), errors_keys))
+        if len(error) > 0:
+            print(errors_dict[error[0]])
+            sleep(2)
+            self.create_individual_device_obj()
+            self.connect_to_device(self.devices[-1])
+
 
     def start_manager(self):
         self.individual_or_multiple_devices()
