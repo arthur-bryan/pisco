@@ -156,7 +156,7 @@ class Manager:
         if self.connection_type == "telnet":
             try:
                 self.obj_connect = Telnet(device.ip_address, "23", 5)
-                #	self.obj_connect.set_debuglevel(1)
+                # self.obj_connect.set_debuglevel(1)
             except OSError:
                 print("\n[!] Could not connect. Host is unreachable.")
                 sleep(2)
@@ -200,7 +200,6 @@ class Manager:
             sleep(2)
             self.create_individual_device_obj()
             self.connect_to_device(self.devices[-1])
-
 
     def start_manager(self):
         self.individual_or_multiple_devices()
