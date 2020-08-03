@@ -9,6 +9,8 @@ def validate_ip(ip):
     for octet in splitted_ip:
         if int(octet) < 0 or int(octet) > 255:
             raise ValueError("[!] Invalid IP!")
+        if len(octet) > 1 and octet.startswith('0'):
+            raise ValueError("[!] Invalid IP!")
     return True, ip
 
 
