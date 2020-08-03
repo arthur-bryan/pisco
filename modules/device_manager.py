@@ -76,15 +76,15 @@ class Manager:
                 break
         vty_username = input("[->] VTY Username (leave empty if not required): ")
         vty_password = getpass(prompt="[->] VTY Password: ")
-        enable_password = getpass(prompt="[->] Enable secret: ")
-        self.devices.append(Device(device_type, ip_addr[1], vty_username, vty_password, enable_password))
+        enable_secret = getpass(prompt="[->] Enable secret: ")
+        self.devices.append(Device(device_type, ip_addr[1], vty_username, vty_password, enable_secret))
 
     def configure_device(self):
+        code = self.choose_script()
+        while code not in list(range(10)):
+            code = self.choose_script()
         for device in self.devices:
             self.connect_to_device(device)
-            code = self.choose_script()
-            while code not in list(range(10)):
-                code = self.choose_script()
             auxiliar_functions.clear()
             variables = {"DEVICE_HOSTNAME": "",
                          "ENABLE_PASSWORD": device.enable_secret}
@@ -106,11 +106,13 @@ class Manager:
                     print("\n\n" + " " * 20 + "Hostname config done!")
                     sleep(2)
                     self.configure_device()
+                elif code == 9:
+                    auxiliar_functions.close()
 
     def choose_script(self):
         auxiliar_functions.clear()
         try:
-            choice = int(input("""
+            code = int(input("""
             \r                    SCRIPTS\n
             \r[0] Load default
             \r[1] Set Hostname
@@ -126,7 +128,7 @@ class Manager:
         except ValueError:
             self.choose_script()
         else:
-            return choice
+            return code
 
     def get_connection_type(self):
         auxiliar_functions.clear()
@@ -149,27 +151,25 @@ class Manager:
 
     def connect_to_device(self, device):
         if self.connection_type == "telnet":
-            while True:
-                try:
-                    self.obj_connect = Telnet(device.ip_address, "23", 5)
-                except OSError:
-                    print("\n[!]Cold not connect! Please, verify IP settings.")
-                    sleep(2)
-                    auxiliar_functions.clear()
-                    self.create_individual_device_obj()
-                else:
-                    break
-            if device.vty_username != "":
-                self.obj_connect.read_until(b"Username:", 2)
-                self.obj_connect.write(device.vty_username.encode('ascii') + b"\n")
-                sleep(0.5)
+            try:
+                self.obj_connect = Telnet(device.ip_address, "23", 5)
+            except OSError:
+                print("\n[!] Could not connect. Host is unreachable.")
+                sleep(2)
+                self.devices.pop()
+                self.create_individual_device_obj()
+                self.connect_to_device(self.devices[-1])
             else:
+                if device.vty_username != "":
+                    self.obj_connect.read_until(b"Username:", 2)
+                    self.obj_connect.write(device.vty_username.encode('ascii') + b"\n")
+                    sleep(0.5)
                 self.obj_connect.read_until(b"Password:", 2)
                 self.obj_connect.write(device.vty_password.encode('ascii') + b"\n")
                 sleep(0.5)
                 self.obj_connect.write(b"enable\n")
                 self.obj_connect.read_until(b"Password:", 2)
-                self.obj_connect.write(device.vty_password.encode('ascii') + b"\n")
+                self.obj_connect.write(device.enable_secret.encode('ascii') + b"\n")
                 sleep(0.5)
 
     def send_command(self, command, keys, variables):
