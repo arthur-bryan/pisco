@@ -64,10 +64,7 @@ class Manager:
     def create_individual_device_obj(self):
         device_type = self.get_device_type()
         auxiliar_functions.clear()
-        print("""\n                      CONFIGURING INDIVIDUAL DEVICE\n
-        \r          IMPORTANT: Make sure you are typing correct credentials
-        \r                  to prevent miss configuration commands.
-        \r            Follow the comportament of the scripts if possible.\n""")
+        print("\r\n               CONFIGURING INDIVIDUAL DEVICE\n")
         while True:
             try:
                 ip_addr = auxiliar_functions.validate_ip(input("[->] IP address of the device: "))
@@ -88,6 +85,7 @@ class Manager:
             code = self.choose_script()
         for device in self.devices:
             self.connect_to_device(device)
+            device.export_interfaces_info('ip', self.obj_connect)
             auxiliar_functions.clear()
             variables = {"DEVICE_HOSTNAME": "",
                          "ENABLE_PASSWORD": device.enable_secret}
@@ -109,7 +107,19 @@ class Manager:
                     print("\n\n" + " " * 20 + "Hostname config done!")
                     sleep(2)
                     self.configure_device()
+                elif code == 8:
+                    print("\n" + " " * 12 + "SHOW DEVICE INTERFACES STATUS\n")
+                    commands = list(data['SHOW_INTERFACES_STATUS'].values())[0]
+                    [self.send_command(command, keys, variables) for command in commands]
+                    input("\n\n[->] Press enter to continue..")
+                    self.configure_device()
                 elif code == 9:
+                    print("\n" + " " * 12 + "SHOW DEVICE INTERFACES STATUS\n")
+                    commands = list(data['SHOW_INTERFACES_IP'].values())[0]
+                    [self.send_command(command, keys, variables) for command in commands]
+                    input("\n\n[->] Press enter to continue..")
+                    self.configure_device()
+                elif code == 10:
                     auxiliar_functions.close()
 
     def choose_script(self):
@@ -125,8 +135,9 @@ class Manager:
             \r[5] VTP mode access
             \r[6] VTP mode trunk
             \r[7] Erase NVRAM
-            \r[8] Show interfaces info
-            \r[9] Exit\n
+            \r[8] Show interfaces status
+            \r[9] Show interfaces IPs
+            \r[10] Exit\n
             \r--> """))
         except ValueError:
             self.choose_script()
@@ -171,35 +182,41 @@ class Manager:
                 self.obj_connect.read_until(b"Password:", 2)
                 self.obj_connect.write(device.vty_password.encode('ascii') + b"\n")
                 sleep(0.5)
+                self.identify_errors()
                 self.obj_connect.write(b"enable\n")
                 self.obj_connect.read_until(b"Password:", 2)
                 self.obj_connect.write(device.enable_secret.encode('ascii') + b"\n")
                 sleep(0.5)
+                self.identify_errors()
 
     def send_command(self, command, keys, variables):
         found_key = list(filter(lambda key: key in command, keys))		# search for strings to be replaced on command
         if len(found_key) > 0:		# if there is string to replace...
             self.obj_connect.write(command.replace(found_key[0], variables[found_key[0]]).encode('ascii'))
-            print(self.obj_connect.read_very_eager().decode('ascii'), end="")
+            self.identify_errors()
             sleep(1)
         else:
             self.obj_connect.write(command.encode('ascii'))
-            print(self.obj_connect.read_very_eager().decode('ascii'), end="")
+            self.identify_errors()
             sleep(1)
 
     def identify_errors(self):
-        errors_dict = {'% Login invalid': '\n[!] Invalid VTY login credentials!',
-                       '% Bad passwords': '\n[!] Invalid VTY password!',
-                       '% Bad secrets': '\n[!] Invalid secret!',
-                       '% No password set': '\n[!] No enable password configured on device!',
-                       'Translating': '\n[!] Username no configured on device'}
+        errors_dict = {'% Login invalid': '\n\n[!] Invalid VTY login credentials!',
+                       '% Bad passwords': '\n\n[!] Invalid VTY password!',
+                       '% Bad secrets': '\n\n[!] Invalid secret!',
+                       '% No password set': '\n\n[!] No enable password configured on device!',
+                       'Translating': '\n\n[!] Username not configured on device. Set a username or leave it blank.'}
         errors_keys = [key for key in errors_dict]
-        error = list(filter(lambda error: error in self.obj_connect.read_all().decode('ascii'), errors_keys))
-        if len(error) > 0:
-            print(errors_dict[error[0]])
+        line = self.obj_connect.read_very_eager().decode('ascii')
+        found_error = list(filter(lambda error: error in line, errors_keys))
+        if len(found_error) > 0:
+            print(errors_dict[found_error[0]])
             sleep(2)
+            self.devices.pop()
             self.create_individual_device_obj()
             self.connect_to_device(self.devices[-1])
+        else:
+            print(line, end='')
 
     def start_manager(self):
         self.individual_or_multiple_devices()
