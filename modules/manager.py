@@ -14,11 +14,20 @@ FILES_FOLDER = os.path.join(CURRENT_DIR, "../files")
 class Manager:
 
     def __init__(self):
+        """ Instance attributes:
+                self.devices (list): the list that will receive the devices to be configured.
+                self.connection_type (None): ssh/telnet depending on  the user's choice.
+                self.obj_connect (None): ssh/telnet client object depending on the user's choice.
+        """
         self.devices = []
-        self.connection_type = None     # telnet or ssh
+        self.connection_method = None     # telnet or ssh
         self.obj_connect = None     # telnet or ssh client object
 
     def get_device_type(self):
+        """ Menu to choose the type of device to be configured.
+            Returns:
+                str: the device type to be configured.
+        """
         auxiliar_functions.clear()
         try:
             device_type = int(input("""
@@ -41,6 +50,7 @@ class Manager:
                 self.get_device_type()
 
     def individual_or_multiple_devices(self):
+        """ Menu to choose if the manager will configure 1 or more devices."""
         auxiliar_functions.clear()
         try:
             option = int(input("""
@@ -53,7 +63,7 @@ class Manager:
         else:
             if option in range(2):
                 if option == 0:
-                    self.get_connection_type()
+                    self.get_connection_method()
                     self.create_individual_device_obj()
                 else:
                     pass
@@ -62,14 +72,15 @@ class Manager:
                 self.individual_or_multiple_devices()
 
     def create_individual_device_obj(self):
+        """ Asks the device info, create the Device object then put it into devices list."""
         device_type = self.get_device_type()
         auxiliar_functions.clear()
         print("\r\n               CONFIGURING INDIVIDUAL DEVICE\n")
         while True:
             try:
                 ip_addr = auxiliar_functions.validate_ip(input("[->] IP address of the device: "))
-            except ValueError as e:
-                print(e)
+            except ValueError as error:
+                print(error)
                 sleep(0.5)
                 auxiliar_functions.clear()
             else:
@@ -79,7 +90,8 @@ class Manager:
         enable_secret = getpass(prompt="[->] Enable secret: ")
         self.devices.append(Device(device_type, ip_addr[1], vty_username, vty_password, enable_secret))
 
-    def configure_device(self):
+    def configure_devices(self):
+        """ Starts the configuration of devices on the devices list. """
         code = self.choose_script()
         while code not in list(range(10)):
             code = self.choose_script()
@@ -89,7 +101,7 @@ class Manager:
             auxiliar_functions.clear()
             variables = {"DEVICE_HOSTNAME": "",
                          "ENABLE_PASSWORD": device.enable_secret}
-            keys = list(variables.keys())
+            keys = list(variables.keys())   # keywords that will be replaced if found on 'config.json' commands.
             with open(os.path.join(FILES_FOLDER, 'config.json'), "r") as file:
                 data = json.load(file)
                 if code == 0:
@@ -98,7 +110,7 @@ class Manager:
                     [self.send_command(command, keys, variables) for command in commands]
                     print("\n\n" + " " * 20 + "Default config done!")
                     sleep(2)
-                    self.configure_device()
+                    self.configure_devices()
                 elif code == 1:
                     print("\n" + " " * 20 + "SET HOSTNAME\n")
                     variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
@@ -106,23 +118,28 @@ class Manager:
                     [self.send_command(command, keys, variables) for command in commands]
                     print("\n\n" + " " * 20 + "Hostname config done!")
                     sleep(2)
-                    self.configure_device()
+                    self.configure_devices()
                 elif code == 8:
                     print("\n" + " " * 12 + "SHOW DEVICE INTERFACES STATUS\n")
                     commands = list(data['SHOW_INTERFACES_STATUS'].values())[0]
                     [self.send_command(command, keys, variables) for command in commands]
                     input("\n\n[->] Press enter to continue..")
-                    self.configure_device()
+                    self.configure_devices()
                 elif code == 9:
-                    print("\n" + " " * 12 + "SHOW DEVICE INTERFACES STATUS\n")
+                    print("\n" + " " * 12 + "SHOW DEVICE INTERFACES IP\n")
                     commands = list(data['SHOW_INTERFACES_IP'].values())[0]
                     [self.send_command(command, keys, variables) for command in commands]
                     input("\n\n[->] Press enter to continue..")
-                    self.configure_device()
+                    self.configure_devices()
                 elif code == 10:
+                    self.devices.pop()
                     auxiliar_functions.close()
 
     def choose_script(self):
+        """ Menu to choose the script to run on the device(s).
+            Returns:
+                int: the code of the choosen option.
+         """
         auxiliar_functions.clear()
         try:
             code = int(input("""
@@ -144,7 +161,8 @@ class Manager:
         else:
             return code
 
-    def get_connection_type(self):
+    def get_connection_method(self):
+        """ Asks the connection method to use when connecting to device(s)."""
         auxiliar_functions.clear()
         try:
             option = int(input("""
@@ -153,21 +171,25 @@ class Manager:
             \r[1] Configure over SSH\n
             \r--> """))
         except ValueError:
-            self.get_connection_type()
+            self.get_connection_method()
         else:
             if option not in (0, 1):
-                self.get_connection_type()
+                self.get_connection_method()
             else:
                 if option == 0:
-                    self.connection_type = "telnet"
+                    self.connection_method = "telnet"
                 else:
-                    self.connection_type = "ssh"
+                    self.connection_method = "ssh"
 
     def connect_to_device(self, device):
-        if self.connection_type == "telnet":
+        """ Creates the object client (ssh or telnet) then connect to device.
+            Params:
+                device (class Device): the device which the manager will connect to.
+        """
+        if self.connection_method == "telnet":
             try:
                 self.obj_connect = Telnet(device.ip_address, "23", 5)
-                # self.obj_connect.set_debuglevel(1)
+                # self.obj_connect.set_debuglevel(1) # uncomment this line to enable debug for Telnet obj.
             except OSError:
                 print("\n[!] Could not connect. Host is unreachable.")
                 sleep(2)
@@ -188,36 +210,47 @@ class Manager:
                 self.obj_connect.write(device.enable_secret.encode('ascii') + b"\n")
                 sleep(0.5)
                 self.identify_errors()
+                print("Connected to  device...")
 
     def send_command(self, command, keys, variables):
-        found_key = list(filter(lambda key: key in command, keys))		# search for strings to be replaced on command
-        if len(found_key) > 0:		# if there is string to replace...
+        """ Handle the command and send it to the device.
+            Args:
+                command (str): command that sits on the 'config.json' file to be handle and sent.
+                keys (list): the list with the keywords to be replaced if found on command.
+                variables (dict): the dict with the keywords ant its values to help replacing strings.
+        """
+        found_key = list(filter(lambda key: key in command, keys))  # founds commands to be replaced.
+        if len(found_key) > 0:
             self.obj_connect.write(command.replace(found_key[0], variables[found_key[0]]).encode('ascii'))
             self.identify_errors()
-            sleep(1)
+            sleep(0.6)  # timeout before send another command to prevent errors.
         else:
             self.obj_connect.write(command.encode('ascii'))
             self.identify_errors()
-            sleep(1)
+            sleep(0.6)
 
     def identify_errors(self):
+        """ Handle the command output to verify if there is errors based on a dict with some errors keywords
+            and its descriptions."""
         errors_dict = {'% Login invalid': '\n\n[!] Invalid VTY login credentials!',
                        '% Bad passwords': '\n\n[!] Invalid VTY password!',
                        '% Bad secrets': '\n\n[!] Invalid secret!',
-                       '% No password set': '\n\n[!] No enable password configured on device!',
+                       '% No password set': '\n\n[!] No enable password configured on device! Cant run scripts.',
                        'Translating': '\n\n[!] Username not configured on device. Set a username or leave it blank.'}
-        errors_keys = [key for key in errors_dict]
+        errors_keywords = [key for key in errors_dict]
         line = self.obj_connect.read_very_eager().decode('ascii')
-        found_error = list(filter(lambda error: error in line, errors_keys))
+        found_error = list(filter(lambda error: error in line, errors_keywords))
         if len(found_error) > 0:
             print(errors_dict[found_error[0]])
             sleep(2)
             self.devices.pop()
+            print("Device removed from list.")
             self.create_individual_device_obj()
+            print(f"New device added, now there are {len(self.devices)} devices on list.")
             self.connect_to_device(self.devices[-1])
         else:
             print(line, end='')
 
     def start_manager(self):
         self.individual_or_multiple_devices()
-        self.configure_device()
+        self.configure_devices()
