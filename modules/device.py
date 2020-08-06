@@ -6,6 +6,7 @@ import csv
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 FILES_FOLDER = os.path.join(CURRENT_DIR, "../files")
 
+
 class Device:
 
     def __init__(self, device_type, ip_address, vty_username, vty_password, enable_secret):
@@ -32,7 +33,7 @@ class Device:
         # opens a .txt and writes the 'show interfaces status' output to it.
         with open(f"{FILES_FOLDER}/interface.txt", "w") as file:
             if option == "ip":
-                file.write("\n")	# blank line to help formating file on this output
+                file.write("\n")    # blank line to help formating file on this output
             file.write(str(output).replace("\n", ""))
             file.close()
         # opens the .txt with interface data and create a .csv from it.
@@ -43,14 +44,13 @@ class Device:
             file.seek(0)
             lines = []
             for i, line in enumerate(file.readlines()):
-                if i == 2 and i < number_of_lines -1:   # ignores the firsts and last useless lines.
+                if i == 2 and i < number_of_lines - 1:   # ignores the firsts and last useless lines.
                     line = line.split()
                     lines.append(line)
-                elif i > 2 and i < number_of_lines - 1:
+                elif 2 < i < number_of_lines - 1:
                     line = line.split()
                     line.insert(1, "")
                     lines.append(line)
             csv_writer.writerows(lines)
             csv_interface_file.close()
-            os.remove(f"{FILES_FOLDER}/interface.txt") # removes txt file when it get useless.
-
+            os.remove(f"{FILES_FOLDER}/interface.txt")  # removes txt file when it get useless.
