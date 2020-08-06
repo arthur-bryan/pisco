@@ -19,6 +19,7 @@
 	Run the 'pisco.py' file in the root folder of the project and
 	start doing what you want with the menu.
 
+    -----> MAKE SURE THE DEVICES YOU WANT TO CONFUGURE HAVE ENABLE SECRET PASSWORD SET.
     ---- > MAKE SURE YOU ARE TYPING CORRECT CREDENTIALS TO PREVENT MISS
            CONFIGURATION COMMANDS!
 

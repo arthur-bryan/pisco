@@ -1,6 +1,6 @@
 import os
 from modules import auxiliar_functions
-from modules.device_manager import Manager
+from modules.manager import Manager
 
 
 EXECUTABLE_PATH = os.path.abspath(__file__)
