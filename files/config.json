@@ -34,7 +34,6 @@
 	{
 		"commands": [
 			"\b\n",
-			"\bend\n",
 			"\bshow interfaces status\n",
 			"\b\n"]
 	},
@@ -43,7 +42,6 @@
 	{
 		"commands": [
 			"\b\n",
-			"\bend\n",
 			"\bshow ip interface brief\n",
 			"\b\n"]
 	}
