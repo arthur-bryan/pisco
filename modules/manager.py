@@ -20,8 +20,8 @@ class Manager:
                 self.obj_connect (None): ssh/telnet client object depending on the user's choice.
         """
         self.devices = []
-        self.connection_method = None     # telnet or ssh
-        self.obj_connect = None     # telnet or ssh client object
+        self.connection_method = None
+        self.obj_connect = None
 
     def get_device_type(self):
         """ Menu to choose the type of device to be configured.
@@ -93,7 +93,7 @@ class Manager:
     def configure_devices(self):
         """ Starts the configuration of devices on the devices list. """
         code = self.choose_script()
-        while code not in list(range(10)):
+        while code not in list(range(11)):
             code = self.choose_script()
         for device in self.devices:
             if not device.is_configured:
@@ -227,7 +227,6 @@ class Manager:
                 self.obj_connect.write(device.enable_secret.encode('ascii') + b"\n")
                 sleep(0.5)
                 self.identify_errors()
-                print("Connected to  device...")
 
     def send_command(self, command, keys, variables):
         """ Handle the command and send it to the device.
@@ -261,9 +260,7 @@ class Manager:
             print(errors_dict[found_error[0]])
             sleep(2)
             self.devices.pop()
-            print("Device removed from list.")
             self.create_individual_device_obj()
-            print(f"New device added, now there are {len(self.devices)} devices on list.")
             self.configure_devices()
         else:
             print(line, end='')
