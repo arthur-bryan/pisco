@@ -16,12 +16,16 @@ class Device:
         self.vty_password = vty_password
         self.enable_secret = enable_secret
         self.interfaces = []
+        self.is_configured = False
 
     def export_interfaces_info(self, option, manager):
         """ Stores the interfaces status command output to a txt and then
             create a csv based on it.
-            :param str option: must be 'status' or 'ip'
-            :param Manager manager: the object manager that manages the device
+            Params:
+                option (str):  must be 'status' or 'ip'.
+                manager (class Manager): the object manager that manages the device.
+            Returns:
+                csv_interface_file
         """
         if option == 'status':
             command = 'show interfaces status\n'
@@ -54,3 +58,4 @@ class Device:
             csv_writer.writerows(lines)
             csv_interface_file.close()
             os.remove(f"{FILES_FOLDER}/interface.txt")  # removes txt file when it get useless.
+            return csv_interface_file

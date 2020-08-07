@@ -96,44 +96,61 @@ class Manager:
         while code not in list(range(10)):
             code = self.choose_script()
         for device in self.devices:
-            self.connect_to_device(device)
-            device.export_interfaces_info('ip', self.obj_connect)
-            auxiliar_functions.clear()
-            variables = {"DEVICE_HOSTNAME": "",
-                         "ENABLE_PASSWORD": device.enable_secret}
-            keys = list(variables.keys())   # keywords that will be replaced if found on 'config.json' commands.
-            with open(os.path.join(FILES_FOLDER, 'config.json'), "r") as file:
-                data = json.load(file)
-                if code == 0:
-                    print("\n" + " " * 20 + "DEFAULT CONFIG\n")
-                    commands = list(data['DEFAULT_CONFIG'].values())[0]
-                    [self.send_command(command, keys, variables) for command in commands]
-                    print("\n\n" + " " * 20 + "Default config done!")
-                    sleep(2)
-                    self.configure_devices()
-                elif code == 1:
-                    print("\n" + " " * 20 + "SET HOSTNAME\n")
-                    variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
-                    commands = list(data['SET_HOSTNAME'].values())[0]
-                    [self.send_command(command, keys, variables) for command in commands]
-                    print("\n\n" + " " * 20 + "Hostname config done!")
-                    sleep(2)
-                    self.configure_devices()
-                elif code == 8:
-                    print("\n" + " " * 12 + "SHOW DEVICE INTERFACES STATUS\n")
-                    commands = list(data['SHOW_INTERFACES_STATUS'].values())[0]
-                    [self.send_command(command, keys, variables) for command in commands]
-                    input("\n\n[->] Press enter to continue..")
-                    self.configure_devices()
-                elif code == 9:
-                    print("\n" + " " * 12 + "SHOW DEVICE INTERFACES IP\n")
-                    commands = list(data['SHOW_INTERFACES_IP'].values())[0]
-                    [self.send_command(command, keys, variables) for command in commands]
-                    input("\n\n[->] Press enter to continue..")
-                    self.configure_devices()
-                elif code == 10:
-                    self.devices.pop()
-                    auxiliar_functions.close()
+            if not device.is_configured:
+                self.connect_to_device(device)
+                device.export_interfaces_info('ip', self.obj_connect)
+                auxiliar_functions.clear()
+                variables = {"DEVICE_HOSTNAME": "",
+                             "ENABLE_PASSWORD": device.enable_secret}
+                keys = list(variables.keys())   # keywords that will be replaced if found on 'config.json' commands.
+                with open(os.path.join(FILES_FOLDER, 'config.json'), "r") as file:
+                    data = json.load(file)
+                    if code == 0:
+                        print("\n" + " " * 20 + "DEFAULT CONFIG\n")
+                        commands = list(data['DEFAULT_CONFIG'].values())[0]
+                        [self.send_command(command, keys, variables) for command in commands]
+                        print("\n\n" + " " * 20 + "Default config done!")
+                        sleep(2)
+                        if len(self.devices) == 1:
+                            self.configure_devices()
+                        else:
+                            device.is_configured = True
+                            self.configure_devices()
+                    elif code == 1:
+                        print("\n" + " " * 20 + "SET HOSTNAME\n")
+                        variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
+                        commands = list(data['SET_HOSTNAME'].values())[0]
+                        [self.send_command(command, keys, variables) for command in commands]
+                        print("\n\n" + " " * 20 + "Hostname config done!")
+                        sleep(2)
+                        if len(self.devices) == 1:
+                            self.configure_devices()
+                        else:
+                            device.is_configured = True
+                            self.configure_devices()
+                    elif code == 8:
+                        print("\n" + " " * 12 + "SHOW DEVICE INTERFACES STATUS\n")
+                        commands = list(data['SHOW_INTERFACES_STATUS'].values())[0]
+                        [self.send_command(command, keys, variables) for command in commands]
+                        input("\n\n[->] Press enter to continue..")
+                        if len(self.devices) == 1:
+                            self.configure_devices()
+                        else:
+                            device.is_configured = True
+                            self.configure_devices()
+                    elif code == 9:
+                        print("\n" + " " * 12 + "SHOW DEVICE INTERFACES IP\n")
+                        commands = list(data['SHOW_INTERFACES_IP'].values())[0]
+                        [self.send_command(command, keys, variables) for command in commands]
+                        input("\n\n[->] Press enter to continue..")
+                        if len(self.devices) == 1:
+                            self.configure_devices()
+                        else:
+                            device.is_configured = True
+                            self.configure_devices()
+                    elif code == 10:
+                        self.devices.pop()
+                        auxiliar_functions.close()
 
     def choose_script(self):
         """ Menu to choose the script to run on the device(s).
@@ -247,7 +264,7 @@ class Manager:
             print("Device removed from list.")
             self.create_individual_device_obj()
             print(f"New device added, now there are {len(self.devices)} devices on list.")
-            self.connect_to_device(self.devices[-1])
+            self.configure_devices()
         else:
             print(line, end='')
 
