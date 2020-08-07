@@ -1,5 +1,6 @@
 {
-	"DEFAULT_CONFIG": {
+	"DEFAULT_CONFIG":
+	{
 		"commands": [
 			"\b\n",
 			"\bconfigure terminal\n",
@@ -17,7 +18,8 @@
 			"\b\n"]
 	},
 
-	"SET_HOSTNAME":{
+	"SET_HOSTNAME":
+	{
 		"commands": [
 			"\b\n",
 			"\bconfigure terminal\n",
@@ -25,6 +27,24 @@
 			"\bexit\n",
 			"\bcopy running-config startup-config\n",
 			"\b\n",
+			"\b\n"]
+	},
+
+	"SHOW_INTERFACES_STATUS":
+	{
+		"commands": [
+			"\b\n",
+			"\bend\n",
+			"\bshow interfaces status\n",
+			"\b\n"]
+	},
+
+	"SHOW_INTERFACES_IP":
+	{
+		"commands": [
+			"\b\n",
+			"\bend\n",
+			"\bshow ip interface brief\n",
 			"\b\n"]
 	}
 }
