@@ -1,4 +1,5 @@
 from telnetlib import Telnet
+from paramiko import SSHClient, AutoAddPolicy
 from modules import auxiliar_functions
 from modules.device import Device
 from time import sleep
@@ -95,62 +96,16 @@ class Manager:
         code = self.choose_script()
         while code not in list(range(11)):
             code = self.choose_script()
-        for device in self.devices:
-            if not device.is_configured:
-                self.connect_to_device(device)
-                device.export_interfaces_info('ip', self.obj_connect)
-                auxiliar_functions.clear()
-                variables = {"DEVICE_HOSTNAME": "",
-                             "ENABLE_PASSWORD": device.enable_secret}
-                keys = list(variables.keys())   # keywords that will be replaced if found on 'config.json' commands.
-                with open(os.path.join(FILES_FOLDER, 'config.json'), "r") as file:
-                    data = json.load(file)
-                    if code == 0:
-                        print("\n" + " " * 20 + "DEFAULT CONFIG\n")
-                        commands = list(data['DEFAULT_CONFIG'].values())[0]
-                        [self.send_command(command, keys, variables) for command in commands]
-                        print("\n\n" + " " * 20 + "Default config done!")
-                        sleep(2)
-                        if len(self.devices) == 1:
-                            self.configure_devices()
-                        else:
-                            device.is_configured = True
-                            self.configure_devices()
-                    elif code == 1:
-                        print("\n" + " " * 20 + "SET HOSTNAME\n")
-                        variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
-                        commands = list(data['SET_HOSTNAME'].values())[0]
-                        [self.send_command(command, keys, variables) for command in commands]
-                        print("\n\n" + " " * 20 + "Hostname config done!")
-                        sleep(2)
-                        if len(self.devices) == 1:
-                            self.configure_devices()
-                        else:
-                            device.is_configured = True
-                            self.configure_devices()
-                    elif code == 8:
-                        print("\n" + " " * 12 + "SHOW DEVICE INTERFACES STATUS\n")
-                        commands = list(data['SHOW_INTERFACES_STATUS'].values())[0]
-                        [self.send_command(command, keys, variables) for command in commands]
-                        input("\n\n[->] Press enter to continue..")
-                        if len(self.devices) == 1:
-                            self.configure_devices()
-                        else:
-                            device.is_configured = True
-                            self.configure_devices()
-                    elif code == 9:
-                        print("\n" + " " * 12 + "SHOW DEVICE INTERFACES IP\n")
-                        commands = list(data['SHOW_INTERFACES_IP'].values())[0]
-                        [self.send_command(command, keys, variables) for command in commands]
-                        input("\n\n[->] Press enter to continue..")
-                        if len(self.devices) == 1:
-                            self.configure_devices()
-                        else:
-                            device.is_configured = True
-                            self.configure_devices()
-                    elif code == 10:
-                        self.devices.pop()
-                        auxiliar_functions.close()
+        if self.connection_method == 'telnet':
+            for device in self.devices:
+                if not device.is_configured:
+                    self.connect_over_telnet(device)
+                    self.send_commands_over_telnet(code, device)
+        else:
+            for device in self.devices:
+                if not device.is_configured:
+                    self.connect_over_ssh(device)
+                    # self.send_commands_over_ssh()
 
     def choose_script(self):
         """ Menu to choose the script to run on the device(s).
@@ -198,52 +153,80 @@ class Manager:
                 else:
                     self.connection_method = "ssh"
 
-    def connect_to_device(self, device):
-        """ Creates the object client (ssh or telnet) then connect to device.
-            Params:
+    def connect_over_telnet(self, device):
+        """ Creates the object client (telnet) then connect to device.
+            Args:
                 device (class Device): the device which the manager will connect to.
         """
-        if self.connection_method == "telnet":
-            try:
-                self.obj_connect = Telnet(device.ip_address, "23", 5)
-                # self.obj_connect.set_debuglevel(1) # uncomment this line to enable debug for Telnet obj.
-            except OSError:
-                print("\n[!] Could not connect. Host is unreachable.")
-                sleep(2)
-                self.devices.pop()
-                self.create_individual_device_obj()
-                self.connect_to_device(self.devices[-1])
-            else:
-                if device.vty_username != "":
-                    self.obj_connect.read_until(b"Username:", 2)
-                    self.obj_connect.write(device.vty_username.encode('ascii') + b"\n")
-                    sleep(0.5)
-                self.obj_connect.read_until(b"Password:", 2)
-                self.obj_connect.write(device.vty_password.encode('ascii') + b"\n")
+        try:
+            self.obj_connect = Telnet(device.ip_address, "23", 5)
+            # self.obj_connect.set_debuglevel(1) # uncomment this line to enable debug for Telnet obj.
+        except OSError:
+            print("\n[!] Could not connect. Host is unreachable.")
+            sleep(2)
+            self.devices.pop()
+            self.create_individual_device_obj()
+            self.connect_over_telnet(self.devices[-1])
+        else:
+            if device.vty_username != "":
+                self.obj_connect.read_until(b"Username:", 2)
+                self.obj_connect.write(device.vty_username.encode('ascii') + b"\n")
                 sleep(0.5)
-                self.identify_errors()
-                self.obj_connect.write(b"enable\n")
-                self.obj_connect.read_until(b"Password:", 2)
-                self.obj_connect.write(device.enable_secret.encode('ascii') + b"\n")
-                sleep(0.5)
-                self.identify_errors()
+            self.obj_connect.read_until(b"Password:", 2)
+            self.obj_connect.write(device.vty_password.encode('ascii') + b"\n")
+            sleep(0.5)
+            self.identify_errors()
+            self.obj_connect.write(b"enable\n")
+            self.obj_connect.read_until(b"Password:", 2)
+            self.obj_connect.write(device.enable_secret.encode('ascii') + b"\n")
+            sleep(0.5)
+            self.identify_errors()
 
-    def send_command(self, command, keys, variables):
+    def connect_over_ssh(self, device):
+        """ Creates the object client (ssh) then connect to device.
+            Args:
+                device (class Device): the device which the manager will connect to.
+        """
+        self.obj_connect = SSHClient()
+        self.obj_connect.load_system_host_keys()
+        self.obj_connect.set_missing_host_key_policy(AutoAddPolicy())
+        self.obj_connect.connect(device.ip_address, 22, device.vty_username, device.vty_password)
+
+    def send_commands_over_telnet(self, device, code):
         """ Handle the command and send it to the device.
             Args:
-                command (str): command that sits on the 'config.json' file to be handle and sent.
-                keys (list): the list with the keywords to be replaced if found on command.
-                variables (dict): the dict with the keywords ant its values to help replacing strings.
+                device (class Device): the device which will receive the commands.
+                code (int): the script code choosen to run on thevice.
         """
-        found_key = list(filter(lambda key: key in command, keys))  # founds commands to be replaced.
-        if len(found_key) > 0:
-            self.obj_connect.write(command.replace(found_key[0], variables[found_key[0]]).encode('ascii'))
-            self.identify_errors()
-            sleep(0.6)  # timeout before send another command to prevent errors.
-        else:
-            self.obj_connect.write(command.encode('ascii'))
-            self.identify_errors()
-            sleep(0.6)
+        auxiliar_functions.clear()
+        variables = {"DEVICE_HOSTNAME": "",
+                     "ENABLE_PASSWORD": device.enable_secret}
+        keys = list(variables.keys())  # keywords that will be replaced if found on 'config.json' commands.
+        code_keywords_dict = {0: 'DEFAULT_CONFIG', 1: 'SET_HOSTNAME', 8: 'SHOW_INTERFACES_STATUS',
+                              9: 'SHOW_INTERFACES_IP'}
+        with open(os.path.join(FILES_FOLDER, 'config.json'), "r") as file:
+            data = json.load(file)
+            if code == 1:
+                variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
+            elif code == 10:
+                self.devices.pop()
+                auxiliar_functions.close()
+            commands = list(data[code_keywords_dict[code]].values())[0]
+            for command in commands:
+                found_key = list(filter(lambda key: key in command, keys))  # founds commands to be replaced.
+                if len(found_key) > 0:
+                    self.obj_connect.write(command.replace(found_key[0], variables[found_key[0]]).encode('ascii'))
+                    self.identify_errors()
+                    sleep(0.6)  # timeout before send another command to prevent errors.
+                else:
+                    self.obj_connect.write(command.encode('ascii'))
+                    self.identify_errors()
+                    sleep(0.6)
+            if len(self.devices) == 1:
+                self.configure_devices()
+            else:
+                device.is_configured = True
+                self.configure_devices()
 
     def identify_errors(self):
         """ Handle the command output to verify if there is errors based on a dict with some errors keywords
