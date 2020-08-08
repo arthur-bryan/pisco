@@ -1,6 +1,6 @@
 Interface,IP-Address,OK?,Method,Status,Protocol
-Ethernet0/0,,unassigned,YES,unset,up,up
-Ethernet0/1,,unassigned,YES,unset,up,up
-Ethernet0/2,,unassigned,YES,unset,up,up
-Ethernet0/3,,unassigned,YES,unset,up,up
-Vlan1,,10.0.0.11,YES,NVRAM,up,up
+Ethernet0/0,unassigned,YES,unset,up,up
+Ethernet0/1,unassigned,YES,unset,up,up
+Ethernet0/2,unassigned,YES,unset,up,up
+Ethernet0/3,unassigned,YES,unset,up,up
+Vlan1,10.0.0.10,YES,NVRAM,up,up
