@@ -30,6 +30,55 @@
 			"\b\n"]
 	},
 
+	"SETUP_SSH_ONLY":
+	{
+		"commands": [
+			"\b\n",
+			"\bconfigure terminal\n",
+			"\bip domain-name DOMAIN_NAME\n",
+			"\bcrypto key generate rsa\n",
+			"\b2048\n",
+			"\bip ssh version 2\n",
+			"\bline vty 0 4\n",
+			"\btransport input ssh\n",
+			"\bexit\n",
+            "\bexit\n",
+			"\b\n"]
+	},
+
+    "SETUP_TELNET_ONLY":
+    {
+        "commands": [
+            "\b\n",
+            "\bconfigure terminal\n",
+            "\bip domain-name DOMAIN_NAME\n",
+            "\bcrypto key generate rsa\n",
+            "\b2048\n",
+            "\bip ssh version 2\n",
+            "\bline vty 0 4\n",
+            "\btransport input telnet\n",
+            "\bexit\n",
+            "\bexit\n",
+            "\b\n"]
+    },
+
+    "SETUP_SSH_TELNET":
+    {
+        "commands": [
+            "\b\n",
+            "\bconfigure terminal\n",
+            "\bip domain-name DOMAIN_NAME\n",
+            "\bcrypto key generate rsa\n",
+            "\b2048\n",
+            "\bip ssh version 2\n",
+            "\bline vty 0 4\n",
+            "\btransport input ssh telnet\n",
+            "\bexit\n",
+            "\bexit\n",
+            "\b\n"]
+    },
+
+
 	"SHOW_INTERFACES_STATUS":
 	{
 		"commands": [
