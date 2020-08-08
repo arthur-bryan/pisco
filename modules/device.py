@@ -38,7 +38,7 @@ class Device:
             client_obj.write(option_commands[option].encode())
             sleep(0.5)
             output = client_obj.read_very_eager().decode('ascii')
-        elif connection_method == 'ssh':
+        else:
             client_obj.send(option_commands[option].encode())
             sleep(0.5)
             output = client_obj.recv(65535).decode('ascii')
