@@ -102,7 +102,7 @@ class Manager:
               \r10.0.0.5,10.0.0.6,10.0.0.10 or 10.0.0.5-10.0.0.20
               \n\n\r[Type the range ->] """).split(','))
         auxiliar_functions.clear()
-        print('\n' + ' '* 10 + "THE CREDENTIALS MUST BE THE SAME IN ALL DEVICES!\n")
+        print('\n' + ' ' * 10 + "THE CREDENTIALS MUST BE THE SAME IN ALL DEVICES!\n")
         vty_username = input("[->] VTY Username: ")
         vty_password = getpass(prompt="[->] VTY Password: ")
         enable_secret = getpass(prompt="[->] Enable secret: ")
@@ -125,7 +125,8 @@ class Manager:
                         self.create_multiples_devices_obj()
                     else:
                         if ip_result not in list(map(lambda device: device.ip_address, self.devices)):
-                            self.devices.append(Device(device_type, ip_result, vty_username, vty_password, enable_secret, domain_name))
+                            self.devices.append(Device(device_type, ip_result, vty_username, vty_password,
+                                                       enable_secret, domain_name))
             else:
                 try:
                     auxiliar_functions.validate_ip(ip)
@@ -135,7 +136,8 @@ class Manager:
                     self.create_multiples_devices_obj()
                 else:
                     if ip not in list(map(lambda device: device.ip_address, self.devices)):
-                        self.devices.append(Device(device_type, ip, vty_username, vty_password, enable_secret, domain_name))
+                        self.devices.append(Device(device_type, ip, vty_username, vty_password,
+                                                   enable_secret, domain_name))
 
     def configure_devices(self):
         """ Starts the configuration of devices on the devices list. """
@@ -247,7 +249,7 @@ class Manager:
         except Exception as error:
             print(f"\n\n[!] {error}")
             sleep(2)
-            self.auxiliar_functions.close()
+            auxiliar_functions.close()
         else:
             self.virtual_terminal = self.obj_connect.invoke_shell()
             self.identify_errors()
@@ -331,9 +333,18 @@ class Manager:
 
     def identify_errors(self):
         """ Handle the command output to verify if there is errors based on a dict with some errors keywords
-            and its descriptions.
-            Args:
-                terminal (class paramiko.SSHClient): used to handle SSH connection outputs."""
+            and its descriptions."""
+        def find_error_on_line(output_line):
+            found_error = list(filter(lambda error: error in output_line, errors_keywords))
+            if len(found_error) > 0:
+                print(errors_dict[found_error[0]])
+                sleep(2)
+                self.devices.pop()
+                self.individual_or_multiple_devices()
+                self.configure_devices()
+            else:
+                print(output_line, end='')
+
         errors_dict = {'% Login invalid': "\n\n[!] Invalid VTY login credentials!",
                        '% Bad passwords': "\n\n[!] Invalid VTY password!",
                        '% Bad secrets': "\n\n[!] Invalid secret! Can't configure",
@@ -348,15 +359,7 @@ class Manager:
                 sleep(1)
                 self.obj_connect.write(b'2048\n')
                 sleep(2)
-            found_error = list(filter(lambda error: error in line, errors_keywords))
-            if len(found_error) > 0:
-                print(errors_dict[found_error[0]])
-                sleep(2)
-                self.devices.pop()
-                self.individual_or_multiple_devices()
-                self.configure_devices()
-            else:
-                print(line, end='')
+            find_error_on_line(line)
         else:
             line = self.virtual_terminal.recv(65535).decode('ascii')
             if '% Do you really want to replace them?' in line or '% You already have RSA keys defined' in line:
@@ -364,15 +367,7 @@ class Manager:
                 sleep(1)
                 self.virtual_terminal.send(b'2048\n')
                 sleep(2)
-            found_error = list(filter(lambda error: error in line, errors_keywords))
-            if len(found_error) > 0:
-                print(errors_dict[found_error[0]])
-                sleep(2)
-                self.devices.pop()
-                self.individual_or_multiple_devices()
-                self.configure_devices()
-            else:
-                print(line, end='')
+            find_error_on_line(line)
 
     def start_manager(self):
         self.individual_or_multiple_devices()
