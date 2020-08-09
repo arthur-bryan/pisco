@@ -43,14 +43,16 @@ class Device:
             sleep(0.5)
             output = client_obj.recv(65535).decode('ascii')
         # writes output to a .txt file.
-        with open(f"{FILES_FOLDER}/interface.txt", "w") as file:
+        txt_file_name = ('interfaces-ip.txt' if option == 'ip' else 'interfaces-status.txt')
+        with open(f"{FILES_FOLDER}/{txt_file_name}", "w") as file:
             if option == "ip":
                 file.write("\n")    # blank line to help formating file on this output
             file.write(str(output).replace("\n", ""))
             file.close()
         # opens the .txt with interface data and create a .csv from it.
-        with open(f"{FILES_FOLDER}/interface.txt", "r") as file:
-            csv_interface_file = open(f"{FILES_FOLDER}/interface.csv", "w")
+        with open(f"{FILES_FOLDER}/{txt_file_name}", "r") as file:
+            csv_file_name = ('interfaces-ip.csv' if option == 'ip' else 'interfaces-status.csv')
+            csv_interface_file = open(f"{FILES_FOLDER}/{csv_file_name}", "w")
             csv_writer = csv.writer(csv_interface_file)
             number_of_lines = len(file.readlines())
             file.seek(0)
@@ -66,5 +68,5 @@ class Device:
                     lines.append(line)
             csv_writer.writerows(lines)
             csv_interface_file.close()
-            os.remove(f"{FILES_FOLDER}/interface.txt")  # removes txt file when it get useless.
+            os.remove(f"{FILES_FOLDER}/{txt_file_name}")  # removes txt file when it get useless.
             return csv_interface_file
