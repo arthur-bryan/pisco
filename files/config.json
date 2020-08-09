@@ -78,6 +78,19 @@
             "\b\n"]
     },
 
+	"ERASE_NVRAM":
+	{
+		"commads": [
+			"\b\n",
+			"\bwrite erase\n",
+			"\b\n",
+			"\bdelete flash:vlan.dat\n",
+			"\b\n",
+			"\by\n",
+			"\breload\n",
+			"\bn\n"
+		]
+	},
 
 	"SHOW_INTERFACES_STATUS":
 	{
