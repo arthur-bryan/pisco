@@ -23,7 +23,7 @@ Recomended the use of a python virtual environment.
 $ git clone https://github.com/arthur-bryan/pisco
 $ cd pisco
 $ chmod +x setup.sh
-$ ./setup.sh	# Run with sudo if not in a virtual env
+$ ./setup.sh	# With sudo if not in a virtual env.
 ```
 
 ### Usage:
@@ -39,6 +39,6 @@ $ python3 pisco.py
 ```sh
 $ cd pisco
 $ chmod +x uninstall.sh
-$ ./uninstall.sh	# Run with sudo if not in a virtual env
+$ ./uninstall.sh	# With sudo if not in a virtual env.
 ```
 
