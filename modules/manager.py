@@ -81,7 +81,7 @@ class Manager:
         auxiliar_functions.clear()
         while True:
             try:
-                ip_addr = auxiliar_functions.validate_ip(input("[->] IP address of the device: "))[1]
+                ip_addr = auxiliar_functions.validate_ip(input("[->] IP address of the device: "))
             except ValueError as error:
                 print(error)
                 sleep(1)
