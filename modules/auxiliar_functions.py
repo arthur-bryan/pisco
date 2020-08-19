@@ -24,7 +24,7 @@ def start_menu():
                 device_manager.start_manager()
             elif choice == 1:
                 clear()
-                with open("../files/help.txt", 'r') as file:
+                with open("files/help.txt", 'r') as file:
                     print(file.read())
                     input("\n[...]Press any key to quit..")
                     file.close()
