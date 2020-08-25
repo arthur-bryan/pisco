@@ -8,12 +8,12 @@
 # Pisco
 ##### Scripts to automate the configuration of Cisco devices.
 
+* Default basic setup (exec-timeout, logging synchonous, no ip domain-lookup...)
 * Change hostnames
-* Setup VLANs
-* Setup users and passwords
-* Setup Telnet/SSH
-* View interfaces info
+* View interfaces IP or status
+* Setup Telnet/SSH access
 * Erase NVRAM
+* And more comming soon...
 
 ### Installation
 
@@ -40,6 +40,9 @@ $ sudo python3 -m pip uninstall pisco
 * Make sure the devices have IP, Telnet/SSH vty logins and enable secret configured already.
 
 ```python
+from pisco.manager import Manager
+from pisco.device import Device
+
 switch1 = Device("10.0.0.10", "admin", "cisco", vty_username="admin")
 switch1.connection_protocol = "ssh"
 switch1.category = "switch"
@@ -51,10 +54,13 @@ manager.configure_devices()
 
 #### Configuring various devices:
 
-* On this example, all devices have the same user/pass login and enable secrets, and
+* On this example, all devices have the same user/pass login and enable secrets, and 
   all will be accessed over telnet.
 
 ```python
+from pisco.manager import Manager
+from pisco.device import Device
+
 ips = ['10.0.0.10', '10.0.0.11', '10.0.0.12', '10.0.0.13', '10.0.0.14']
 
 manager = Manager()
@@ -66,3 +72,6 @@ for ip in ips:
         manager.add_device(device)
 manager.configure_devices()
 ```
+#### You can also retrieve de device credentials from the user at runtime (use modules like getpass when prompting passwords). Feel free to use your creativity!
+  
+#### Any help will be welcome.
