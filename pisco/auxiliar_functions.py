@@ -1,36 +1,5 @@
 from time import sleep
-from modules.manager import Manager
 import sys
-
-
-def start_menu():
-    """ Main menu when the program starts. """
-    clear()
-    try:
-        choice = int(input("""
-        \r==================== Pisco | v0.1 ====================\n
-        \r[0] Start
-        \r[1] Help
-        \r[2] Exit\n
-        \r--> """))
-    except ValueError:
-        start_menu()
-    else:
-        if choice not in range(3):
-            start_menu()
-        else:
-            if choice == 0:
-                device_manager = Manager()
-                device_manager.start_manager()
-            elif choice == 1:
-                clear()
-                with open("files/help.txt", 'r') as file:
-                    print(file.read())
-                    input("\n[...]Press any key to quit..")
-                    file.close()
-                    start_menu()
-            elif choice == 2:
-                close()
 
 
 def validate_ip(ip):
@@ -63,6 +32,6 @@ def clear():
 def close():
     """ Clear the terminal screen and close the program. """
     print("[...] Exiting...")
-    sleep(1)
+    sleep(2)
     clear()
     sys.exit(0)
