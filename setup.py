@@ -14,7 +14,7 @@ setup(
     url='https://github.com/arthur-bryan/pisco',
     python_requires='>=3.7',
     packages=['pisco'],
-    package_data={'pisco': ['data/*']},
+    package_data={'pisco': ['../data/*']},
     install_requires=[
         'bcrypt>=3.1.7',
         'cffi>=1.14.1',

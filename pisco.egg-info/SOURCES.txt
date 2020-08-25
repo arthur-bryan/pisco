@@ -1,0 +1,15 @@
+README.md
+setup.py
+pisco/__init__.py
+pisco/auxiliar_functions.py
+pisco/device.py
+pisco/manager.py
+pisco.egg-info/PKG-INFO
+pisco.egg-info/SOURCES.txt
+pisco.egg-info/dependency_links.txt
+pisco.egg-info/entry_points.txt
+pisco.egg-info/requires.txt
+pisco.egg-info/top_level.txt
+pisco/../data/config.json
+pisco/../data/help.txt
+pisco/../data/interface.csv
