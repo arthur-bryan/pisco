@@ -1,3 +1,0 @@
-[console_scripts]
-pisco = pisco.__init__
-
