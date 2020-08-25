@@ -15,30 +15,54 @@
 * View interfaces info
 * Erase NVRAM
 
-### Install package dependencies
+### Installation
 
 Recomended the use of a python virtual environment.
 
 ```sh
 $ git clone https://github.com/arthur-bryan/pisco
 $ cd pisco
-$ chmod +x setup.sh
-$ ./setup.sh	# With sudo if not in a virtual env.
-```
-
-### Usage:
-
-Start the programg with the following command:
-
-```
-$ python3 pisco.py
+$ sudo python3 setup.py install	
 ```
 
 ### Uninstall package and dependencies
 
 ```sh
-$ cd pisco
-$ chmod +x uninstall.sh
-$ ./uninstall.sh	# With sudo if not in a virtual env.
+$ sudo python3 -m pip uninstall pisco
 ```
 
+
+### Usage examples:
+
+
+#### Configuring one device:
+
+* Make sure the devices have IP, Telnet/SSH vty logins and enable secret configured already.
+
+```python
+switch1 = Device("10.0.0.10", "admin", "cisco", vty_username="admin")
+switch1.connection_protocol = "ssh"
+switch1.category = "switch"
+
+manager = Manager()
+manager.add_device(switch1)
+manager.configure_devices()
+```
+
+#### Configuring various devices:
+
+* On this example, all devices have the same user/pass login and enable secrets, and
+  all will be accessed over telnet.
+
+```python
+ips = ['10.0.0.10', '10.0.0.11', '10.0.0.12', '10.0.0.13', '10.0.0.14']
+
+manager = Manager()
+
+for ip in ips:
+        device = Device(ip, "admin", "cisco", vty_username="admin")
+        device.connection_protocol = "telnet"
+        device.category = "switch"
+        manager.add_device(device)
+manager.configure_devices()
+```
