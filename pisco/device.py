@@ -4,11 +4,18 @@ import csv
 
 
 class Device:
+    """ The class that represents the device to be configured and its attributes."""
 
-    def __init__(self, ip_address, vty_password, enable_secret, vty_username="", domain_name=""):
-        self.__category = None
+    def __init__(self, ip_address, vty_password, enable_secret, vty_username=""):
+        """ Args:
+                ip_address (str): The device IP address that will be used by the manager to stablish econnection.
+                vty_password (str): The VTY password to access de device.
+                enable_secret (str): The secret of the enable mode to configure the device.
+                vty_username (str, optional): The username to connect to device. (Default "" means no user required. 
+
+        """
         self.__connection_protocol = None
-        self.__domain_name = domain_name if domain_name != "" else "lan.com"
+        self.__domain_name = "lan.com"
         self.ip_address = ip_address
         self.vty_username = vty_username if vty_username != "" else ""
         self.vty_password = vty_password
@@ -16,20 +23,8 @@ class Device:
         self.__interfaces = []
 
     @property
-    def category(self):
-        return self.__category
-
-    @category.setter
-    def category(self, device_category):
-        if device_category.upper() == 'SWITCH':
-            self.__category = 'SWITCH'
-        elif device_category.upper() == 'ROUTER':
-            self.__category = 'ROUTER'
-        else:
-            raise ValueError(f"[ ! ] Invalid device category: {device_category}.")
-
-    @property
     def connection_protocol(self):
+        """ str: Specifies the protocol used to remote access (Telnet/SSH). """
         return self.__connection_protocol
 
     @connection_protocol.setter
@@ -43,6 +38,7 @@ class Device:
 
     @property
     def domain_name(self):
+        """ str: The domain name used in some IP configurations like setting up SSH. Default is 'lan.com'."""
         return self.__domain_name
 
     @domain_name.setter
@@ -52,8 +48,9 @@ class Device:
         except Exception as e:
             print(f"[ ! ] {e}.")
 
+"""
     def export_interfaces_info(self, option, connection_protocol, client_obj):
-        """ Stores the interfaces status command output to a txt and then
+         Stores the interfaces status command output to a txt and then
             create a csv based on it.
             Params:
                 option (str):  must be 'status' or 'ip'.
@@ -61,7 +58,7 @@ class Device:
                 client_obj: the telnet or ssh client to send commands to device.
             Returns:
                 csv_interface_file
-        """
+        
         option_commands = {'status': 'show interfaces status\n',
                            'ip': 'show ip interface brief\n'}
         if connection_protocol == 'telnet':
@@ -100,3 +97,4 @@ class Device:
             csv_interface_file.close()
             os.remove("data/{txt_file_name}")  # removes txt file when it get useless
             return csv_interface_file
+"""
