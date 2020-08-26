@@ -6,7 +6,8 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/arthur-bryan/pisco)
 
 
-![pisco](https://usr-images.githubusercontent/34891953/91322086-b15c9700-e795-11ea-8a30-e7ef610baeef.GIF)
+![pisco](https://user-images.githubusercontent.com/34891953/91322086-b15c9700-e795-11ea-8a30-e7ef610baeef.GIF)
+
 
 # Pisco
 ##### Scripts to automate the configuration of Cisco devices.
