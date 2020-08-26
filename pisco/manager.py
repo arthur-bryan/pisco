@@ -4,25 +4,25 @@ from pisco import auxiliar_functions
 from time import sleep
 import os
 import json
-import sys
 
-config_file = os.path.join(os.path.dirname(__file__), '..', 'data', 'config.json')
+config_file = os.path.join(os.path.dirname(__file__), 'data', 'config.json')	# file with commands that will be run based on choosen script.
 
 
 class Manager:
+    """ The class that holds the methods used to configure the devices. """
 
     def __init__(self):
-        """ Instance attributes:
-                self.devices (list): the list that will receive the devices to be configured.
-                self.connection_type (None): ssh/telnet depending on  the user's choice.
-                self.obj_connect (None): ssh/telnet client object depending on the user's choice.
-                self.terminal_virtual (None): the shell invoket by SSHClient.
-        """
         self.__devices = []
         self.__obj_connect = None
         self.__virtual_terminal = None
 
     def add_device(self, device):
+        """ Add the device (obj) to the list of devices to be configured.
+
+            Args:
+                device (:obj: `Device`): The device to be added.
+
+        """
         self.__devices.append(device)
 
     def configure_devices(self):
@@ -53,13 +53,24 @@ class Manager:
                         auxiliar_functions.close()
 
     def choose_script(self):
-        """ Menu to choose the script to run on the device(s).
+        """ Menu of scripts to run on the device(s).
+
             Returns:
-                int: the code of the choosen option.
+                commands_code (int): The code of the choosen option.
+
          """
         auxiliar_functions.clear()
         commands_code = int(input("""
-        \r                    SCRIPTS\n
+ _______  ___   _______  _______  _______
+|       ||   | |       ||       ||       |
+|    _  ||   | |  _____||       ||   _   |
+|   |_| ||   | | |_____ |       ||  | |  |
+|    ___||   | |_____  ||      _||  |_|  |
+|   |    |   |  _____| ||     |_ |       |
+|___|    |___| |_______||_______||_______|
+                v0.1.0a
+
+        \r                SCRIPTS\n
         \r[0] Load default
         \r[1] Set Hostname
         \r[2] Create VLANs
@@ -77,9 +88,11 @@ class Manager:
         return commands_code
 
     def login_over_telnet(self, device):
-        """ Connect to the device by a telnet client.
+        """ Creates an Telnet client object, then tries to login to the device using its attributes.
+
             Args:
-                device: the device which the manager will connect to.
+                device (:obj: `Device`): The device that the manager will connect to.
+
         """
         try:
             self.__obj_connect = Telnet(device.ip_address, "23", 5)
@@ -103,16 +116,18 @@ class Manager:
             self.identify_errors(device)
 
     def login_over_ssh(self, device):
-        """ Connect to the device by a SSH client.
+        """ Creates an SSHClient object, load the keys, then tries to login to the device using its attributes.
+
             Args:
-                device: the device which the manager will connect to.
+                device (:obj: `Device`): The device that the manager will connect to.
+
         """
         self.__obj_connect = SSHClient()
         self.__obj_connect.load_system_host_keys()
         self.__obj_connect.set_missing_host_key_policy(AutoAddPolicy())
         try:
             self.__obj_connect.connect(device.ip_address, 22, device.vty_username, device.vty_password)
-            self.__virtual_terminal = self.__obj_connect.invoke_shell()
+            self.__virtual_terminal = self.__obj_connect.invoke_shell() # Opens a virtual shell to run commands.
         except Exception as error:
             print(f"[ ! ] {error}")
             self.__obj_connect.close()
@@ -127,9 +142,11 @@ class Manager:
 
     def send_commands_over_telnet(self, device, code):
         """ Handle the command and send it to the device over telnet client object.
+
             Args:
-                device (class Device): the device which will receive the commands.
-                code (int): the script code choosen to run on thevice.
+                device (:obj: `Device`): The device that will receive the commands.
+                code (int): The script code choosen to run on thevice.
+
         """
         variables = {"DEVICE_HOSTNAME": "",
                      "DOMAIN_NAME": device.domain_name,
@@ -162,9 +179,11 @@ class Manager:
 
     def send_commands_over_ssh(self, device, code):
         """ Run the commands on the tevice over SSH according to code.
+
             Args:
-                device: the device which will receive the commands.
-                code (int): the script code choosen to run on thevice.
+                device (:obj: `Device`): The device that will receive the commands.
+                code (int): The script code choosen to run on thevice.
+
         """
         variables = {"DEVICE_HOSTNAME": "",
                      "ENABLE_PASSWORD": device.enable_secret,
@@ -196,13 +215,23 @@ class Manager:
 
     def identify_errors(self, device):
         """ Handle the command output to verify if there is errors based on a dict with some errors keywords
-            and its descriptions."""
+            and its descriptions.
+
+            Args:
+                device (:obj: `Device`): The current device being configurated.
+
+        """
 
         def find_error_on_line(output_line):
+            """ Verify if the output command line has errors based on a predefined dict.
+
+                Args:
+                    output_line (str): The device output command line to be verified.
+
+            """
             found_error = list(filter(lambda error: error in output_line, errors_keywords))
             if len(found_error) > 0:
                 print(f"[ ! ] {errors_dict[found_error[0]]}.")
-                self.__devices.pop()
             else:
                 print(output_line, end='')
 
@@ -216,16 +245,10 @@ class Manager:
             errors_keywords = [key for key in errors_dict]
             line = self.__obj_connect.read_very_eager().decode('ascii')
             if '% Do you really want to replace them?' in line or '% You already have RSA keys defined' in line:
-                self.__obj_connect.write(b'yes\n')
-                sleep(1)
-                self.__obj_connect.write(b'2048\n')
-                sleep(2)
+                self.__obj_connect.write(b'no\n')
             find_error_on_line(line)
         else:
             line = self.__virtual_terminal.recv(65535).decode('ascii')
             if '% Do you really want to replace them?' in line or '% You already have RSA keys defined' in line:
-                self.__virtual_terminal.send(b'yes\n')
-                sleep(1)
-                self.__virtual_terminal.send(b'2048\n')
-                sleep(2)
+                self.__virtual_terminal.send(b'no\n')
             find_error_on_line(line)

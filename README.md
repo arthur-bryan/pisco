@@ -63,9 +63,10 @@ ips = ['10.0.0.10', '10.0.0.11', '10.0.0.12', '10.0.0.13', '10.0.0.14']
 manager = Manager()
 
 for ip in ips:
-        device = Device(ip, "admin", "cisco", vty_username="admin")
-        device.connection_protocol = "telnet"
-        manager.add_device(device)
+    device = Device(ip, "admin", "cisco", vty_username="admin")
+    device.connection_protocol = "telnet"
+    manager.add_device(device)
+
 manager.configure_devices()	# here the devices won't have the domain name set and default will be "lan.com"
 ```
 
