@@ -70,7 +70,7 @@ for ip in ips:
 manager.configure_devices()	# here the devices won't have the domain name set and default will be "lan.com"
 ```
 
-#### You can also retrieve de device credentials from the user at runtime (use modules like getpass when prompt$
+#### You can also retrieve de device credentials from the user at runtime (use modules like getpass when prompting passwords).
 
 #### Any help will be welcome.
 
