@@ -2,7 +2,11 @@
 [![Status Badge](https://img.shields.io/badge/status-development-3066be)](https://github.com/arthur-bryan/pisco)
 ![GitHub](https://img.shields.io/github/license/arthur-bryan/pisco?color=blue)
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/arthur-bryan/pisco)](https://github.com/arthur-bryan/pisco/tags)
+<<<<<<< HEAD
 [![Python Badge](https://img.shields.io/badge/-Python%203.7+-3066be?logo=Python&logoColor=white&link=https://www.python.org/)](https://www.python.org/)
+=======
+[![Python Badge](https://img.shields.io/badge/-Python%203.7+-3066be?logo=Python&logoColor=white&link=https://www.python.org/)](https://www.python.org/) 
+>>>>>>> 57b64f6cb86d99d02d0fb5f444e678cf9f85b0b7
 ![GitHub repo size](https://img.shields.io/github/repo-size/arthur-bryan/pisco)
 
 ![pisco](https://usr-images.githubusercontent/34891953/91322086-b15c9700-e795-11ea-8a30-e7ef610baeef.GIF)
@@ -10,11 +14,17 @@
 # Pisco
 ##### Scripts to automate the configuration of Cisco devices.
 
+* Default basic setup (exec-timeout, logging synchonous, no ip domain-lookup...)
 * Change hostnames
+<<<<<<< HEAD
 * Setup VLANs
 * Setup users and passwords
 * Setup Telnet/SSH access
 * View interfaces info
+=======
+* View interfaces IP or status
+* Setup Telnet/SSH access
+>>>>>>> 57b64f6cb86d99d02d0fb5f444e678cf9f85b0b7
 * Erase NVRAM
 * And more comming soon...
 
@@ -46,6 +56,9 @@ $ sudo python3 -m pip uninstall pisco
 #### Configuring one device:
 
 ```python
+from pisco.manager import Manager
+from pisco.device import Device
+
 switch1 = Device("10.0.0.10", "admin", "cisco", vty_username="admin")
 switch1.connection_protocol = "ssh"
 switch1.domain_name = "lab.lan"	# sets the domain name on device.
@@ -57,7 +70,16 @@ manager.configure_devices()
 
 #### Configuring various devices:
 
+<<<<<<< HEAD
+=======
+* On this example, all devices have the same user/pass login and enable secrets, and 
+  all will be accessed over telnet.
+
+>>>>>>> 57b64f6cb86d99d02d0fb5f444e678cf9f85b0b7
 ```python
+from pisco.manager import Manager
+from pisco.device import Device
+
 ips = ['10.0.0.10', '10.0.0.11', '10.0.0.12', '10.0.0.13', '10.0.0.14']
 
 manager = Manager()
@@ -69,8 +91,14 @@ for ip in ips:
 
 manager.configure_devices()	# here the devices won't have the domain name set and default will be "lan.com"
 ```
+<<<<<<< HEAD
 
 #### You can also retrieve de device credentials from the user at runtime (use modules like getpass when prompt$
 
 #### Any help will be welcome.
 
+=======
+#### You can also retrieve de device credentials from the user at runtime (use modules like getpass when prompting passwords). Feel free to use your creativity!
+  
+#### Any help will be welcome.
+>>>>>>> 57b64f6cb86d99d02d0fb5f444e678cf9f85b0b7
