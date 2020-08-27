@@ -28,31 +28,32 @@ class Manager:
     def configure_devices(self):
         """ Starts the configuration of devices on the devices list. """
         try:
-            commands_code = self.choose_script()
+            commands_code = self.__choose_script()
         except Exception as e:
             print(f"[ ! ] {e}.")
             self.configure_devices()
         else:
             while commands_code not in list(range(13)):
-                commands_code = self.choose_script()
+                commands_code = self.__choose_script()
             for _, device in enumerate(self.__devices):
+                auxiliar_functions.clear()
                 print(f"\n[ + ] CONFIGURING  THE {_+1}º DEVICE...\n")
-                if device.connection_protocol == 'TELNET':
+                if device.connection_protocol == "TELNET":
                     try:
-                        self.login_over_telnet(device)
-                        self.send_commands_over_telnet(device, commands_code)
+                        self.__login_over_telnet(device)
+                        self.__send_commands(device, commands_code)
                     except Exception as e:
                         print(e)
                         auxiliar_functions.close()
                 else:
                     try:
-                        self.login_over_ssh(device)
-                        self.send_commands_over_ssh(device, commands_code)
+                        self.__login_over_ssh(device)
+                        self.__send_commands(device, commands_code)
                     except Exception as e:
                         print(e)
-                        auxiliar_functions.close()
+                    auxiliar_functions.close()
 
-    def choose_script(self):
+    def __choose_script(self):
         """ Menu of scripts to run on the device(s).
 
             Returns:
@@ -87,7 +88,7 @@ class Manager:
         \r--> """))
         return commands_code
 
-    def login_over_telnet(self, device):
+    def __login_over_telnet(self, device):
         """ Creates an Telnet client object, then tries to login to the device using its attributes.
 
             Args:
@@ -108,14 +109,14 @@ class Manager:
             self.__obj_connect.read_until(b"Password:", 2)
             self.__obj_connect.write(device.vty_password.encode('ascii') + b"\n")
             sleep(0.5)
-            self.identify_errors(device)
+            self.__identify_errors(device)
             self.__obj_connect.write(b"enable\n")
             self.__obj_connect.read_until(b"Password:", 2)
             self.__obj_connect.write(device.enable_secret.encode('ascii') + b"\n")
             sleep(0.5)
-            self.identify_errors(device)
+            self.__identify_errors(device)
 
-    def login_over_ssh(self, device):
+    def __login_over_ssh(self, device):
         """ Creates an SSHClient object, load the keys, then tries to login to the device using its attributes.
 
             Args:
@@ -133,52 +134,15 @@ class Manager:
             self.__obj_connect.close()
             auxiliar_functions.close()
         else:
-            self.identify_errors(device)
+            self.__identify_errors(device)
             self.__virtual_terminal.send(b"enable\n")
             sleep(0.5)
             self.__virtual_terminal.send(device.enable_secret.encode() + b"\n")
             sleep(0.5)
-            self.identify_errors(device)
+            self.__identify_errors(device)
 
-    def send_commands_over_telnet(self, device, code):
-        """ Handle the command and send it to the device over telnet client object.
-
-            Args:
-                device (:obj: `Device`): The device that will receive the commands.
-                code (int): The script code choosen to run on thevice.
-
-        """
-        variables = {"DEVICE_HOSTNAME": "",
-                     "DOMAIN_NAME": device.domain_name,
-                     "ENABLE_PASSWORD": device.enable_secret}
-        keys = list(variables.keys())  # keywords that will be replaced if found on 'config.json' commands.
-        codes_dict = {0: 'DEFAULT_CONFIG', 1: 'SET_HOSTNAME', 4: 'SETUP_SSH_ONLY',
-                      5: 'SETUP_TELNET_ONLY', 6: 'SETUP_SSH_TELNET', 10: 'SHOW_INTERFACES_STATUS',
-                      11: 'SHOW_INTERFACES_IP'}
-        with open(config_file, "r") as file:
-            data = json.load(file)
-            if code == 1:
-                variables["DEVICE_HOSTNAME"] = input("[ -> ] Set hostname: ")
-            elif code == 12:
-                auxiliar_functions.close()
-            commands = list(data[codes_dict[code]].values())[0]
-            for command in commands:
-                found_key = list(filter(lambda key: key in command, keys))  # found commands to be replaced.
-                if len(found_key) > 0:
-                    self.__obj_connect.write(command.replace(found_key[0], variables[found_key[0]]).encode('ascii'))
-                    self.identify_errors(device)
-                    sleep(0.6)  # timeout before send another command to prevent errors.
-                else:
-                    self.__obj_connect.write(command.encode('ascii'))
-                    self.identify_errors(device)
-                    sleep(0.6)
-            if code in range(10, 12):
-                input("\n\r[->] Press enter to continue...")
-
-        auxiliar_functions.clear()
-
-    def send_commands_over_ssh(self, device, code):
-        """ Run the commands on the tevice over SSH according to code.
+    def __send_commands(self, device, code):
+        """ Loads the config file and run the commands based on the choosen code.
 
             Args:
                 device (:obj: `Device`): The device that will receive the commands.
@@ -187,33 +151,74 @@ class Manager:
         """
         variables = {"DEVICE_HOSTNAME": "",
                      "ENABLE_PASSWORD": device.enable_secret,
-                     "DOMAIN_NAME": device.domain_name}
+                     "DOMAIN_NAME": device.domain_name,
+                     "VLAN_NUMBER": None}
         keys = list(variables.keys())  # keywords that will be replaced if found on 'config.json' commands.
-        codes_dict = {0: 'DEFAULT_CONFIG', 1: 'SET_HOSTNAME', 4: 'SETUP_SSH_ONLY',
+        codes_dict = {0: 'DEFAULT_CONFIG', 1: 'SET_HOSTNAME', 3: "CREATE_VLAN", 4: 'SETUP_SSH_ONLY',
                       5: 'SETUP_TELNET_ONLY', 6: 'SETUP_SSH_TELNET', 10: 'SHOW_INTERFACES_STATUS',
                       11: 'SHOW_INTERFACES_IP'}
         with open(config_file, "r") as file:
             data = json.load(file)
             if code == 1:
                 variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
-            elif code == 10:
+            elif code == 3:
+                vlans_to_create = input("\n\n[ -> ] Type the number of each VLAN separated by commas (eg: 5,15,20): ").split(',')
+                for vlan in vlans_to_create:
+                    if int(vlan) not in range(3968, 4048) and int(vlan) != 4094:
+                        variables["VLAN_NUMBER"] = vlan
+                        commands = list(data[codes_dict[code]].values())[0]
+                        if device.connection_protocol == "SSH":
+                            for command in commands:
+                                found_key = list(filter(lambda key: key in command, keys))
+                                if len(found_key) > 0:
+                                    self.__virtual_terminal.send(command.replace(found_key[0], variables[found_key[0]]))
+                                    self.__identify_errors(device)
+                                    sleep(0.6)
+                                else:
+                                    self.__virtual_terminal.send(command.encode())
+                                    self.__identify_errors(device)
+                                    sleep(0.6)
+                        else:
+                            for command in commands:
+                                found_key = list(filter(lambda key: key in command, keys))  # found commands to be replaced.
+                                if len(found_key) > 0:
+                                    self.__obj_connect.write(command.replace(found_key[0], variables[found_key[0]]).encode('ascii'))
+                                    self.__identify_errors(device)
+                                    sleep(0.6)  # timeout before send another command to prevent errors.
+                                else:
+                                    self.__obj_connect.write(command.encode('ascii'))
+                                    self.__identify_errors(device)
+                                    sleep(0.6)
+                auxiliar_functions.close()
+            elif code == 12:
                 auxiliar_functions.close()
             commands = list(data[codes_dict[code]].values())[0]
-            for command in commands:
-                found_key = list(filter(lambda key: key in command, keys))
-                if len(found_key) > 0:
-                    self.__virtual_terminal.send(command.replace(found_key[0], variables[found_key[0]]))
-                    self.identify_errors(device)
-                    sleep(0.6)
-                else:
-                    self.__virtual_terminal.send(command.encode())
-                    self.identify_errors(device)
-                    sleep(0.6)
+            if device.connection_protocol == "SSH":
+                for command in commands:
+                    found_key = list(filter(lambda key: key in command, keys))
+                    if len(found_key) > 0:
+                        self.__virtual_terminal.send(command.replace(found_key[0], variables[found_key[0]]))
+                        self.__identify_errors(device)
+                        sleep(0.6)
+                    else:
+                        self.__virtual_terminal.send(command.encode())
+                        self.__identify_errors(device)
+                        sleep(0.6)
+            else:
+                for command in commands:
+                    found_key = list(filter(lambda key: key in command, keys))  # found commands to be replaced.
+                    if len(found_key) > 0:
+                        self.__obj_connect.write(command.replace(found_key[0], variables[found_key[0]]).encode('ascii'))
+                        self.__identify_errors(device)
+                        sleep(0.6)  # timeout before send another command to prevent errors.
+                    else:
+                        self.__obj_connect.write(command.encode('ascii'))
+                        self.__identify_errors(device)
+                        sleep(0.6)
             if code in range(10, 12):
                 input("\n\n[ -> ] Press enter to continue...")
-        auxiliar_functions.clear()
 
-    def identify_errors(self, device):
+    def __identify_errors(self, device):
         """ Handle the command output to verify if there is errors based on a dict with some errors keywords
             and its descriptions.
 
@@ -231,15 +236,17 @@ class Manager:
             """
             found_error = list(filter(lambda error: error in output_line, errors_keywords))
             if len(found_error) > 0:
-                print(f"[ ! ] {errors_dict[found_error[0]]}.")
+                print(f"[ ! ] {errors_dict[found_error[0]]}")
+                auxiliar_functions.close()
             else:
                 print(output_line, end='')
 
-        errors_dict = {'% Login invalid': "\n\n[!] Invalid VTY login credentials!",
-                       '% Bad passwords': "\n\n[!] Invalid VTY password!",
-                       '% Bad secrets': "\n\n[!] Invalid secret! Can't configure",
-                       '% No password set': "\n\n[!] No enable password configured on device! Cant run scripts.",
-                       'Translating': "\n\n[!] Username not configured on device. Set a username or leave it blank."}
+        errors_dict = {'% Login invalid': "\n\n[ ! ] Invalid VTY login credentials!",
+                       '% Bad passwords': "\n\n[ ! ] Invalid VTY password!",
+                       '% Bad secrets': "\n\n[ ! ] Invalid secret! Can't configure",
+                       '% No password set': "\n\n[ ! ] No enable password configured on device! Cant run scripts.",
+                       'Translating': "\n\n[ ! ] Username not configured on device. Set a username or leave it blank.",
+                       'number which is out of the range 1..4094': "\n\n[ ! ] Invalid vlan number!"}
         errors_keywords = [key for key in errors_dict]
         if device.connection_protocol == 'TELNET':
             errors_keywords = [key for key in errors_dict]
