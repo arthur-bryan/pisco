@@ -5,7 +5,7 @@ with open("README.md", "r") as file:
 
 setup(
     name='pisco',
-    version='0.1.0a',
+    version='0.1.1a',
     description='Automate the configuration of Cisco devices.',
     long_description=long_description,
     author='Arthur Bryan',

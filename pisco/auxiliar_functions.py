@@ -31,7 +31,7 @@ def clear():
 
 def close():
     """ Clear the terminal screen and close the program. """
-    print("[...] Exiting...")
+    print("\n[...] Exiting...")
     sleep(2)
     clear()
     sys.exit(0)
