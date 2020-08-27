@@ -14,6 +14,7 @@
 
 * Default basic setup (exec-timeout, logging synchonous, no ip domain-lookup...)
 * Change hostnames
+* Create VLANs
 * View interfaces IP or status
 * Setup Telnet/SSH access
 * Erase NVRAM
