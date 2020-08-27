@@ -30,6 +30,20 @@
 			"\b\n"]
 	},
 
+
+        "CREATE_VLAN":
+        {
+                "commands": [
+                        "\b\n",
+                        "\bconfigure terminal\n",
+                        "\bvlan VLAN_NUMBER\n",
+                        "\bexit\n",
+                        "\binterface vlan VLAN_NUMBER\n",
+                        "\bno shutdown\n",
+                        "\bend\n",
+                        "\b\n"]
+        },
+
 	"SETUP_SSH_ONLY":
 	{
 		"commands": [
