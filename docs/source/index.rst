@@ -11,7 +11,7 @@ Scripts to automate the configuration of Cisco devices.
 
 - Default basic setup
 - Change hostnames
-- Create VLANs
+- Create/delete VLANs
 - View interfaces IP or status
 - Setup Telnet/SSH access
 - Erase NVRAM
@@ -42,6 +42,7 @@ The currently avaliable configuration keys are:
 -  'DEFAULT\_CONFIG': configure exec-timeout, logging synchronous, no ip domain-lookup...
 -  'SET\_HOSTNAME': change the device hostname.
 -  'CREATE\_VLAN': create individual or multiples VLANs.
+-  'DELETE\_VLAN': delete individual or multiples VLANs.
 -  'SETUP\_SSH\_ONLY': set the VTY transport input for SSH access only.
 -  'SETUP\_TELNET\_ONLY': set the VTY transport input for TELNET access only.
 -  'SETUP\_SSH\_TELNET': set the VTY transport input for both SSH and Telnet access.
@@ -56,6 +57,7 @@ Configuring one device:
     from pisco.manager import Manager
     from pisco.device import Device
 
+    # Creating VLANs 10, 20 and 30 on a switch over SSH
     manager = Manager()
 
     switch1 = Device("10.0.0.10", "admin", "cisco", vty_username="admin")
@@ -63,6 +65,7 @@ Configuring one device:
     switch1.domain_name = 'lab.net'  # set the domain-name (otherwise the default (lan.com) will be set)
     
     manager.add_device(switch1)
+    manager.vlans_to_configure = '10', '20', '30'  # set the VLAN numbers to configure (needed when setting up VLANs)
     manager.configure_devices('CREATE_VLAN')
 
 Configuring various devices:
@@ -79,7 +82,7 @@ Configuring various devices:
         device = Device("10.0.0.10", "admin", "cisco", vty_username="admin")
         device.connection_protocol = "ssh"
         manager.add_device(device)
-    manager.configure_devices('DEFAULT_CONFIG', 'SHOW_INTERFACES_STATUS', 'SHOW_INTERFACES_IP')
+    manager.configure_devices('DEFAULT_CONFIG', 'SETUP_SSH_TELNET', 'SHOW_INTERFACES_IP')
 
 
 Indices and tables
