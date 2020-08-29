@@ -9,8 +9,9 @@ Welcome to Pisco's documentation!
 Scripts to automate the configuration of Cisco devices.
 '''''''''''''''''''''''''''''''''''''''''''''''''''''''
 
-- Default basi setup (exec-timeout, logging synchronous, no ip domain-lookup...)
+- Default basic setup
 - Change hostnames
+- Create VLANs
 - View interfaces IP or status
 - Setup Telnet/SSH access
 - Erase NVRAM
@@ -20,20 +21,33 @@ Scripts to automate the configuration of Cisco devices.
    :maxdepth: 2
    :caption: Contents:
 
-Manager
-=============
+pisco - Manager
+===============
 
 .. automodule:: pisco.manager
     :members:
 
-Device  
-=============   
+pisco - Device  
+===============   
 
 .. automodule:: pisco.device
     :members:
 
 Usage examples:
 ===============
+
+The currently avaliable configuration keys are:
+'''''''''''''''''''''''''''''''''''''''''''''''
+
+-  'DEFAULT\_CONFIG': configure exec-timeout, logging synchronous, no ip domain-lookup...
+-  'SET\_HOSTNAME': change the device hostname.
+-  'CREATE\_VLAN': create individual or multiples VLANs.
+-  'SETUP\_SSH\_ONLY': set the VTY transport input for SSH access only.
+-  'SETUP\_TELNET\_ONLY': set the VTY transport input for TELNET access only.
+-  'SETUP\_SSH\_TELNET': set the VTY transport input for both SSH and Telnet access.
+-  'ERASE\_NVRAM': erase the startup-config and vlan.dat 
+-  'SHOW\_INTERFACE\_IP': show a brief of the current IP configuration of the interfaces.
+-  'SHOW\_INTERFACES\_STATUS': show the current status of the interfaces.
 
 Configuring one device:
 '''''''''''''''''''''''
@@ -49,7 +63,7 @@ Configuring one device:
     switch1.domain_name = 'lab.net'  # set the domain-name (otherwise the default (lan.com) will be set)
     
     manager.add_device(switch1)
-    manager.configure_devices()
+    manager.configure_devices('CREATE_VLAN')
 
 Configuring various devices:
 ''''''''''''''''''''''''''''
@@ -65,7 +79,7 @@ Configuring various devices:
         device = Device("10.0.0.10", "admin", "cisco", vty_username="admin")
         device.connection_protocol = "ssh"
         manager.add_device(device)
-    manager.configure_devices()
+    manager.configure_devices('DEFAULT_CONFIG', 'SHOW_INTERFACES_STATUS', 'SHOW_INTERFACES_IP')
 
 
 Indices and tables
