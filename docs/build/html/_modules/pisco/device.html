@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pisco.device &#8212; Pisco 0.1.0a documentation</title>
+    <title>pisco.device &#8212; Pisco 0.1.1a documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0a',
+        VERSION:     '0.1.1a',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -40,7 +40,6 @@
   <h1>Source code for pisco.device</h1><div class="highlight"><pre>
 <span></span><span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">sleep</span>
 <span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">csv</span>
 
 
 <div class="viewcode-block" id="Device"><a class="viewcode-back" href="../../index.html#pisco.device.Device">[docs]</a><span class="k">class</span> <span class="nc">Device</span><span class="p">:</span>
@@ -51,7 +50,7 @@
 <span class="sd">                ip_address (str): The device IP address that will be used by the manager to stablish econnection.</span>
 <span class="sd">                vty_password (str): The VTY password to access de device.</span>
 <span class="sd">                enable_secret (str): The secret of the enable mode to configure the device.</span>
-<span class="sd">                vty_username (str, optional): The username to connect to device. (Default &quot;&quot; means no user required. </span>
+<span class="sd">                vty_username (str, optional): The username to connect to device. (Default &quot;&quot; means no user required.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__connection_protocol</span> <span class="o">=</span> <span class="kc">None</span>
@@ -65,6 +64,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">connection_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; str: Specifies the protocol used to remote access (Telnet/SSH). &quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connection_protocol</span>
 
     <span class="nd">@connection_protocol</span><span class="o">.</span><span class="n">setter</span>
@@ -79,6 +79,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">domain_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; str: The domain name used in some IP configurations like setting up SSH. Default is &#39;lan.com&#39;.&quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__domain_name</span>
 
     <span class="nd">@domain_name</span><span class="o">.</span><span class="n">setter</span>
@@ -88,56 +89,7 @@
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[ ! ] </span><span class="si">{e}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
 
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    def export_interfaces_info(self, option, connection_protocol, client_obj):</span>
-<span class="sd">         Stores the interfaces status command output to a txt and then</span>
-<span class="sd">            create a csv based on it.</span>
-<span class="sd">            Params:</span>
-<span class="sd">                option (str):  must be &#39;status&#39; or &#39;ip&#39;.</span>
-<span class="sd">                connection_method (str): &#39;telnet&#39; or &#39;ssh&#39;.</span>
-<span class="sd">                client_obj: the telnet or ssh client to send commands to device.</span>
-<span class="sd">            Returns:</span>
-<span class="sd">                csv_interface_file</span>
-<span class="sd">        </span>
-<span class="sd">        option_commands = {&#39;status&#39;: &#39;show interfaces status\n&#39;,</span>
-<span class="sd">                           &#39;ip&#39;: &#39;show ip interface brief\n&#39;}</span>
-<span class="sd">        if connection_protocol == &#39;telnet&#39;:</span>
-<span class="sd">            client_obj.write(option_commands[option].encode())</span>
-<span class="sd">            sleep(0.5)</span>
-<span class="sd">            output = client_obj.read_very_eager().decode(&#39;ascii&#39;)</span>
-<span class="sd">        else:</span>
-<span class="sd">            client_obj.send(option_commands[option].encode())</span>
-<span class="sd">            sleep(0.5)</span>
-<span class="sd">            output = client_obj.recv(65535).decode(&#39;ascii&#39;)</span>
-<span class="sd">        # writes output to a .txt file.</span>
-<span class="sd">        txt_file_name = (&#39;interfaces-ip.txt&#39; if option == &#39;ip&#39; else &#39;interfaces-status.txt&#39;)</span>
-<span class="sd">        with open(f&quot;data/{txt_file_name}&quot;, &quot;w&quot;) as file:</span>
-<span class="sd">            if option == &quot;ip&quot;:</span>
-<span class="sd">                file.write(&quot;\n&quot;)    # blank line to help formating file on this output</span>
-<span class="sd">            file.write(str(output).replace(&quot;\n&quot;, &quot;&quot;))</span>
-<span class="sd">            file.close()</span>
-<span class="sd">        # opens the .txt with interface data and create a .csv from it.</span>
-<span class="sd">        with open(f&quot;data/{txt_file_name}&quot;, &quot;r&quot;) as file:</span>
-<span class="sd">            csv_file_name = (&#39;interfaces-ip.csv&#39; if option == &#39;ip&#39; else &#39;interfaces-status.csv&#39;)</span>
-<span class="sd">            csv_interface_file = open(f&quot;data/{csv_file_name}&quot;, &quot;w&quot;)</span>
-<span class="sd">            csv_writer = csv.writer(csv_interface_file)</span>
-<span class="sd">            number_of_lines = len(file.readlines())</span>
-<span class="sd">            file.seek(0)</span>
-<span class="sd">            lines = []</span>
-<span class="sd">            for i, line in enumerate(file.readlines()):</span>
-<span class="sd">                if i == 2 and i &lt; number_of_lines - 1:   # ignores the 2 firsts and last useless lines.</span>
-<span class="sd">                    line = line.split()</span>
-<span class="sd">                    lines.append(line)</span>
-<span class="sd">                elif 2 &lt; i &lt; number_of_lines - 1:</span>
-<span class="sd">                    line = line.split()</span>
-<span class="sd">                    if option == &quot;status&quot; and len(line) &lt; 7:</span>
-<span class="sd">                        line.insert(1, &quot;&quot;)</span>
-<span class="sd">                    lines.append(line)</span>
-<span class="sd">            csv_writer.writerows(lines)</span>
-<span class="sd">            csv_interface_file.close()</span>
-<span class="sd">            os.remove(&quot;data/{txt_file_name}&quot;)  # removes txt file when it get useless</span>
-<span class="sd">            return csv_interface_file</span>
-<span class="sd">&quot;&quot;&quot;</span>
+
 </pre></div>
 
           </div>

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Welcome to Pisco’s documentation! &#8212; Pisco 0.1.0a documentation</title>
+    <title>Welcome to Pisco’s documentation! &#8212; Pisco 0.1.1a documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.0a',
+        VERSION:     '0.1.1a',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -42,8 +42,9 @@
 <div class="section" id="scripts-to-automate-the-configuration-of-cisco-devices">
 <h2>Scripts to automate the configuration of Cisco devices.<a class="headerlink" href="#scripts-to-automate-the-configuration-of-cisco-devices" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
-<li>Default basi setup (exec-timeout, logging synchronous, no ip domain-lookup…)</li>
+<li>Default basic setup</li>
 <li>Change hostnames</li>
+<li>Create VLANs</li>
 <li>View interfaces IP or status</li>
 <li>Setup Telnet/SSH access</li>
 <li>Erase NVRAM</li>
@@ -54,7 +55,7 @@
 </div>
 </div>
 <div class="section" id="module-pisco.manager">
-<span id="manager"></span><h1>Manager<a class="headerlink" href="#module-pisco.manager" title="Permalink to this headline">¶</a></h1>
+<span id="pisco-manager"></span><h1>pisco - Manager<a class="headerlink" href="#module-pisco.manager" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pisco.manager.Manager">
 <em class="property">class </em><code class="descclassname">pisco.manager.</code><code class="descname">Manager</code><a class="reference internal" href="_modules/pisco/manager.html#Manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pisco.manager.Manager" title="Permalink to this definition">¶</a></dt>
@@ -70,79 +71,16 @@
 </dd></dl>
 
 <dl class="method">
-<dt id="pisco.manager.Manager.choose_script">
-<code class="descname">choose_script</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisco/manager.html#Manager.choose_script"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pisco.manager.Manager.choose_script" title="Permalink to this definition">¶</a></dt>
-<dd><p>Menu of scripts to run on the device(s).</p>
-<dl class="docutils">
-<dt>Returns:</dt>
-<dd>commands_code (int): The code of the choosen option.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
 <dt id="pisco.manager.Manager.configure_devices">
-<code class="descname">configure_devices</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisco/manager.html#Manager.configure_devices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pisco.manager.Manager.configure_devices" title="Permalink to this definition">¶</a></dt>
+<code class="descname">configure_devices</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisco/manager.html#Manager.configure_devices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pisco.manager.Manager.configure_devices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Starts the configuration of devices on the devices list.</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="pisco.manager.Manager.identify_errors">
-<code class="descname">identify_errors</code><span class="sig-paren">(</span><em>device</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisco/manager.html#Manager.identify_errors"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pisco.manager.Manager.identify_errors" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handle the command output to verify if there is errors based on a dict with some errors keywords
-and its descriptions.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>device (:obj: <cite>Device</cite>): The current device being configurated.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pisco.manager.Manager.login_over_ssh">
-<code class="descname">login_over_ssh</code><span class="sig-paren">(</span><em>device</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisco/manager.html#Manager.login_over_ssh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pisco.manager.Manager.login_over_ssh" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates an SSHClient object, load the keys, then tries to login to the device using its attributes.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>device (:obj: <cite>Device</cite>): The device that the manager will connect to.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pisco.manager.Manager.login_over_telnet">
-<code class="descname">login_over_telnet</code><span class="sig-paren">(</span><em>device</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisco/manager.html#Manager.login_over_telnet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pisco.manager.Manager.login_over_telnet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Creates an Telnet client object, then tries to login to the device using its attributes.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>device (:obj: <cite>Device</cite>): The device that the manager will connect to.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pisco.manager.Manager.send_commands_over_ssh">
-<code class="descname">send_commands_over_ssh</code><span class="sig-paren">(</span><em>device</em>, <em>code</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisco/manager.html#Manager.send_commands_over_ssh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pisco.manager.Manager.send_commands_over_ssh" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the commands on the tevice over SSH according to code.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>device (:obj: <cite>Device</cite>): The device that will receive the commands.
-code (int): The script code choosen to run on thevice.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="pisco.manager.Manager.send_commands_over_telnet">
-<code class="descname">send_commands_over_telnet</code><span class="sig-paren">(</span><em>device</em>, <em>code</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisco/manager.html#Manager.send_commands_over_telnet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pisco.manager.Manager.send_commands_over_telnet" title="Permalink to this definition">¶</a></dt>
-<dd><p>Handle the command and send it to the device over telnet client object.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>device (:obj: <cite>Device</cite>): The device that will receive the commands.
-code (int): The script code choosen to run on thevice.</dd>
-</dl>
 </dd></dl>
 
 </dd></dl>
 
 </div>
 <div class="section" id="module-pisco.device">
-<span id="device"></span><h1>Device<a class="headerlink" href="#module-pisco.device" title="Permalink to this headline">¶</a></h1>
+<span id="pisco-device"></span><h1>pisco - Device<a class="headerlink" href="#module-pisco.device" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="pisco.device.Device">
 <em class="property">class </em><code class="descclassname">pisco.device.</code><code class="descname">Device</code><span class="sig-paren">(</span><em>ip_address</em>, <em>vty_password</em>, <em>enable_secret</em>, <em>vty_username=''</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pisco/device.html#Device"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pisco.device.Device" title="Permalink to this definition">¶</a></dt>
@@ -164,6 +102,20 @@ code (int): The script code choosen to run on thevice.</dd>
 </div>
 <div class="section" id="usage-examples">
 <h1>Usage examples:<a class="headerlink" href="#usage-examples" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="the-currently-avaliable-configuration-keys-are">
+<h2>The currently avaliable configuration keys are:<a class="headerlink" href="#the-currently-avaliable-configuration-keys-are" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>‘DEFAULT_CONFIG’: configure exec-timeout, logging synchronous, no ip domain-lookup…</li>
+<li>‘SET_HOSTNAME’: change the device hostname.</li>
+<li>‘CREATE_VLAN’: create individual or multiples VLANs.</li>
+<li>‘SETUP_SSH_ONLY’: set the VTY transport input for SSH access only.</li>
+<li>‘SETUP_TELNET_ONLY’: set the VTY transport input for TELNET access only.</li>
+<li>‘SETUP_SSH_TELNET’: set the VTY transport input for both SSH and Telnet access.</li>
+<li>‘ERASE_NVRAM’: erase the startup-config and vlan.dat</li>
+<li>‘SHOW_INTERFACE_IP’: show a brief of the current IP configuration of the interfaces.</li>
+<li>‘SHOW_INTERFACES_STATUS’: show the current status of the interfaces.</li>
+</ul>
+</div>
 <div class="section" id="configuring-one-device">
 <h2>Configuring one device:<a class="headerlink" href="#configuring-one-device" title="Permalink to this headline">¶</a></h2>
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pisco.manager</span> <span class="k">import</span> <span class="n">Manager</span>
@@ -176,7 +128,7 @@ code (int): The script code choosen to run on thevice.</dd>
 <span class="n">switch1</span><span class="o">.</span><span class="n">domain_name</span> <span class="o">=</span> <span class="s1">&#39;lab.net&#39;</span>  <span class="c1"># set the domain-name (otherwise the default (lan.com) will be set)</span>
 
 <span class="n">manager</span><span class="o">.</span><span class="n">add_device</span><span class="p">(</span><span class="n">switch1</span><span class="p">)</span>
-<span class="n">manager</span><span class="o">.</span><span class="n">configure_devices</span><span class="p">()</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">configure_devices</span><span class="p">(</span><span class="s1">&#39;CREATE_VLAN&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -192,7 +144,7 @@ code (int): The script code choosen to run on thevice.</dd>
     <span class="n">device</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s2">&quot;10.0.0.10&quot;</span><span class="p">,</span> <span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="s2">&quot;cisco&quot;</span><span class="p">,</span> <span class="n">vty_username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
     <span class="n">device</span><span class="o">.</span><span class="n">connection_protocol</span> <span class="o">=</span> <span class="s2">&quot;ssh&quot;</span>
     <span class="n">manager</span><span class="o">.</span><span class="n">add_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-<span class="n">manager</span><span class="o">.</span><span class="n">configure_devices</span><span class="p">()</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">configure_devices</span><span class="p">(</span><span class="s1">&#39;DEFAULT_CONFIG&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOW_INTERFACES_STATUS&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOW_INTERFACES_IP&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
