@@ -12,7 +12,7 @@
 # Pisco
 ##### Scripts to automate the configuration of Cisco devices.
 
-* Default basic setup (exec-timeout, logging synchonous, no ip domain-lookup...)
+* Default basic setup
 * Change hostnames
 * Create VLANs
 * View interfaces IP or status
@@ -57,7 +57,7 @@ switch1.domain_name = "lab.lan"	# sets the domain name on device.
 
 manager = Manager()
 manager.add_device(switch1)
-manager.configure_devices()
+manager.configure_devices('ERASE_NVRAM')
 ```
 
 #### Configuring various devices:
@@ -75,7 +75,7 @@ for ip in ips:
     device.connection_protocol = "telnet"
     manager.add_device(device)
 
-manager.configure_devices()	# here the devices won't have the domain name set and default will be "lan.com"
+manager.configure_devices('DEFAULT_CONFIG', 'SHOW_INTERFACES_IP', 'SETUP_SSH_TELNET')	# here the devices won't have the domain name set and default will be "lan.com"
 ```
 
 #### You can also retrieve de device credentials from the user at runtime (use modules like getpass when prompting passwords).
