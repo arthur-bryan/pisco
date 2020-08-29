@@ -44,7 +44,7 @@
 <ul class="simple">
 <li>Default basic setup</li>
 <li>Change hostnames</li>
-<li>Create VLANs</li>
+<li>Create/delete VLANs</li>
 <li>View interfaces IP or status</li>
 <li>Setup Telnet/SSH access</li>
 <li>Erase NVRAM</li>
@@ -108,6 +108,7 @@
 <li>‘DEFAULT_CONFIG’: configure exec-timeout, logging synchronous, no ip domain-lookup…</li>
 <li>‘SET_HOSTNAME’: change the device hostname.</li>
 <li>‘CREATE_VLAN’: create individual or multiples VLANs.</li>
+<li>‘DELETE_VLAN’: delete individual or multiples VLANs.</li>
 <li>‘SETUP_SSH_ONLY’: set the VTY transport input for SSH access only.</li>
 <li>‘SETUP_TELNET_ONLY’: set the VTY transport input for TELNET access only.</li>
 <li>‘SETUP_SSH_TELNET’: set the VTY transport input for both SSH and Telnet access.</li>
@@ -121,6 +122,7 @@
 <div class="code python highlight-default"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pisco.manager</span> <span class="k">import</span> <span class="n">Manager</span>
 <span class="kn">from</span> <span class="nn">pisco.device</span> <span class="k">import</span> <span class="n">Device</span>
 
+<span class="c1"># Creating VLANs 10, 20 and 30 on a switch over SSH</span>
 <span class="n">manager</span> <span class="o">=</span> <span class="n">Manager</span><span class="p">()</span>
 
 <span class="n">switch1</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s2">&quot;10.0.0.10&quot;</span><span class="p">,</span> <span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="s2">&quot;cisco&quot;</span><span class="p">,</span> <span class="n">vty_username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
@@ -128,6 +130,7 @@
 <span class="n">switch1</span><span class="o">.</span><span class="n">domain_name</span> <span class="o">=</span> <span class="s1">&#39;lab.net&#39;</span>  <span class="c1"># set the domain-name (otherwise the default (lan.com) will be set)</span>
 
 <span class="n">manager</span><span class="o">.</span><span class="n">add_device</span><span class="p">(</span><span class="n">switch1</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">vlans_to_configure</span> <span class="o">=</span> <span class="s1">&#39;10&#39;</span><span class="p">,</span> <span class="s1">&#39;20&#39;</span><span class="p">,</span> <span class="s1">&#39;30&#39;</span>  <span class="c1"># set the VLAN numbers to configure (needed when setting up VLANs)</span>
 <span class="n">manager</span><span class="o">.</span><span class="n">configure_devices</span><span class="p">(</span><span class="s1">&#39;CREATE_VLAN&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -144,7 +147,7 @@
     <span class="n">device</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s2">&quot;10.0.0.10&quot;</span><span class="p">,</span> <span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="s2">&quot;cisco&quot;</span><span class="p">,</span> <span class="n">vty_username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
     <span class="n">device</span><span class="o">.</span><span class="n">connection_protocol</span> <span class="o">=</span> <span class="s2">&quot;ssh&quot;</span>
     <span class="n">manager</span><span class="o">.</span><span class="n">add_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-<span class="n">manager</span><span class="o">.</span><span class="n">configure_devices</span><span class="p">(</span><span class="s1">&#39;DEFAULT_CONFIG&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOW_INTERFACES_STATUS&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOW_INTERFACES_IP&#39;</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">configure_devices</span><span class="p">(</span><span class="s1">&#39;DEFAULT_CONFIG&#39;</span><span class="p">,</span> <span class="s1">&#39;SETUP_SSH_TELNET&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOW_INTERFACES_IP&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
