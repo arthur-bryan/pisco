@@ -10,7 +10,7 @@
 			"\bexec-timeout 0 0\n",
 			"\bexit\n",
 			"\bline vty 0 4\n",
-            "\blogging synchronous\n",
+                        "\blogging synchronous\n",
 			"\bexec-timeout 0 0\n",
 			"\bend\n",
 			"\bcopy running-config startup-config\n",
@@ -45,6 +45,22 @@
                         "\b\n",
                         "\b\n"]
         },
+
+        "DELETE_VLAN":
+        {
+                "commands": [
+                        "\b\n",
+                        "\bconfigure terminal\n",
+                        "\binterface vlan VLAN_NUMBER\n",
+                        "\bshutdown\n",
+                        "\bexit\n",
+                        "\bno vlan VLAN_NUMBER\n",
+                        "\bend\n",
+                        "\bcopy running-config startup-config\n",
+                        "\b\n",
+                        "\b\n"]
+        },
+
 
 	"SETUP_SSH_ONLY":
 	{
