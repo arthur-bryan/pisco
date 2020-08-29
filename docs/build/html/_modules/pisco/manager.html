@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pisco.manager &#8212; Pisco 0.1.0a documentation</title>
+    <title>pisco.manager &#8212; Pisco 0.1.1a documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.0a',
+        VERSION:     '0.1.1a',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -45,16 +45,26 @@
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">json</span>
 
-<span class="n">config_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;config.json&#39;</span><span class="p">)</span>	<span class="c1"># file with commands that will be run based on choosen script.</span>
-
 
 <div class="viewcode-block" id="Manager"><a class="viewcode-back" href="../../index.html#pisco.manager.Manager">[docs]</a><span class="k">class</span> <span class="nc">Manager</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot; The class that holds the methods used to configure the devices. &quot;&quot;&quot;</span>
 
+    <span class="n">CONFIG_FILE_PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">),</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;config.json&#39;</span><span class="p">)</span>
+    <span class="n">variables</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;DEVICE_HOSTNAME&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="s2">&quot;ENABLE_PASSWORD&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="s2">&quot;DOMAIN_NAME&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="s2">&quot;VLAN_NUMBER&quot;</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+    <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>  <span class="c1"># keywords that will be replaced if found on &#39;config.json&#39; commands.</span>
+    <span class="n">configuration_keywords</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;DEFAULT_CONFIG&#39;</span><span class="p">,</span> <span class="s1">&#39;SET_HOSTNAME&#39;</span><span class="p">,</span> <span class="s2">&quot;CREATE_VLAN&quot;</span><span class="p">,</span> <span class="s1">&#39;ACCESS_SSH_ONLY&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;ACCESS_TELNET_ONLY&#39;</span><span class="p">,</span> <span class="s1">&#39;ACCESS_SSH_TELNET&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOW_INTERFACES_STATUS&#39;</span><span class="p">,</span>
+                              <span class="s1">&#39;SHOW_INTERFACES_IP&#39;</span><span class="p">)</span>
+    <span class="n">config_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">CONFIG_FILE_PATH</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span>
+    <span class="n">config_json</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__devices</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__virtual_terminal</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__shell</span> <span class="o">=</span> <span class="kc">None</span>
 
 <div class="viewcode-block" id="Manager.add_device"><a class="viewcode-back" href="../../index.html#pisco.manager.Manager.add_device">[docs]</a>    <span class="k">def</span> <span class="nf">add_device</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Add the device (obj) to the list of devices to be configured.</span>
@@ -65,69 +75,31 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__devices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">device</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="Manager.configure_devices"><a class="viewcode-back" href="../../index.html#pisco.manager.Manager.configure_devices">[docs]</a>    <span class="k">def</span> <span class="nf">configure_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Manager.configure_devices"><a class="viewcode-back" href="../../index.html#pisco.manager.Manager.configure_devices">[docs]</a>    <span class="k">def</span> <span class="nf">configure_devices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Starts the configuration of devices on the devices list. &quot;&quot;&quot;</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">commands_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choose_script</span><span class="p">()</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[ ! ] </span><span class="si">{e}</span><span class="s2">.&quot;</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">configure_devices</span><span class="p">()</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">while</span> <span class="n">commands_code</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">13</span><span class="p">)):</span>
-                <span class="n">commands_code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">choose_script</span><span class="p">()</span>
-            <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">device</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__devices</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[ + ] CONFIGURING  THE {_+1}º DEVICE...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
-                <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">connection_protocol</span> <span class="o">==</span> <span class="s1">&#39;TELNET&#39;</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">login_over_telnet</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">send_commands_over_telnet</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">commands_code</span><span class="p">)</span>
-                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-                        <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="k">try</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">login_over_ssh</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">send_commands_over_ssh</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">commands_code</span><span class="p">)</span>
-                    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-                        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
-                        <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">device</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__devices</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;ENABLE_PASSWORD&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">enable_secret</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;DOMAIN_NAME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">device</span><span class="o">.</span><span class="n">domain_name</span>
+            <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">[ + ] CONFIGURING  THE {_+1}º DEVICE...</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">connection_protocol</span> <span class="o">==</span> <span class="s2">&quot;TELNET&quot;</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__login_over_telnet</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__configure</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connnect</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="si">{e}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__login_over_ssh</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__configure</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="si">{e}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
 
-<div class="viewcode-block" id="Manager.choose_script"><a class="viewcode-back" href="../../index.html#pisco.manager.Manager.choose_script">[docs]</a>    <span class="k">def</span> <span class="nf">choose_script</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Menu of scripts to run on the device(s).</span>
-
-<span class="sd">            Returns:</span>
-<span class="sd">                commands_code (int): The code of the choosen option.</span>
-
-<span class="sd">         &quot;&quot;&quot;</span>
-        <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
-        <span class="n">commands_code</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">input</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2"> _______  ___   _______  _______  _______</span>
-<span class="s2">|       ||   | |       ||       ||       |</span>
-<span class="s2">|    _  ||   | |  _____||       ||   _   |</span>
-<span class="s2">|   |_| ||   | | |_____ |       ||  | |  |</span>
-<span class="s2">|    ___||   | |_____  ||      _||  |_|  |</span>
-<span class="s2">|   |    |   |  _____| ||     |_ |       |</span>
-<span class="s2">|___|    |___| |_______||_______||_______|</span>
-<span class="s2">                v0.1.0a</span>
-
-<span class="s2">        </span><span class="se">\r</span><span class="s2">                SCRIPTS</span><span class="se">\n</span><span class="s2"></span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[0] Load default</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[1] Set Hostname</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[2] Create VLANs</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[3] Setup VLANs</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[4] Setup for SSH-only access</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[5] Setup for Telnet-only access</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[6] Setup allow SSH/Telnet access</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[7] VTP mode access</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[8] VTP mode trunk</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[9] Erase NVRAM</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[10] Show interfaces status</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[11] Show interfaces IPs</span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">[12] Exit</span><span class="se">\n</span><span class="s2"></span>
-<span class="s2">        </span><span class="se">\r</span><span class="s2">--&gt; &quot;&quot;&quot;</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">commands_code</span></div>
-
-<div class="viewcode-block" id="Manager.login_over_telnet"><a class="viewcode-back" href="../../index.html#pisco.manager.Manager.login_over_telnet">[docs]</a>    <span class="k">def</span> <span class="nf">login_over_telnet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__login_over_telnet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Creates an Telnet client object, then tries to login to the device using its attributes.</span>
 
 <span class="sd">            Args:</span>
@@ -148,14 +120,14 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">read_until</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;Password:&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">vty_password</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;enable</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">read_until</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;Password:&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">enable_secret</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Manager.login_over_ssh"><a class="viewcode-back" href="../../index.html#pisco.manager.Manager.login_over_ssh">[docs]</a>    <span class="k">def</span> <span class="nf">login_over_ssh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__login_over_ssh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Creates an SSHClient object, load the keys, then tries to login to the device using its attributes.</span>
 
 <span class="sd">            Args:</span>
@@ -167,93 +139,77 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">set_missing_host_key_policy</span><span class="p">(</span><span class="n">AutoAddPolicy</span><span class="p">())</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">ip_address</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">vty_username</span><span class="p">,</span> <span class="n">device</span><span class="o">.</span><span class="n">vty_password</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__virtual_terminal</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">invoke_shell</span><span class="p">()</span> <span class="c1"># Opens a virtual shell to run commands.</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__shell</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">invoke_shell</span><span class="p">()</span> <span class="c1"># Opens a shell to run commands.</span>
         <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">error</span><span class="p">:</span>
             <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[ ! ] </span><span class="si">{error}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__virtual_terminal</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;enable</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__shell</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s2">&quot;enable</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__virtual_terminal</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">enable_secret</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__shell</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">device</span><span class="o">.</span><span class="n">enable_secret</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="o">+</span> <span class="sa">b</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Manager.send_commands_over_telnet"><a class="viewcode-back" href="../../index.html#pisco.manager.Manager.send_commands_over_telnet">[docs]</a>    <span class="k">def</span> <span class="nf">send_commands_over_telnet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">code</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Handle the command and send it to the device over telnet client object.</span>
+    <span class="k">def</span> <span class="nf">__configure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">configurations</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;  Start running commands on device if the configurations keys exists on &#39;confin.json&#39; file.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                device (:obj: `Device`): The device to be configured.</span>
+<span class="sd">                configurations (str): The command keys based on &#39;config.json&#39;.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">config_key</span> <span class="ow">in</span> <span class="n">configurations</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">config_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">configuration_keywords</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">config_key</span> <span class="o">==</span> <span class="s1">&#39;SET_HOSTNAME&#39;</span><span class="p">:</span>
+                    <span class="n">variables</span><span class="p">[</span><span class="s2">&quot;DEVICE_HOSTNAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;[-&gt;] Set hostname: &quot;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">config_key</span> <span class="o">==</span> <span class="s1">&#39;CREATE_VLAN&#39;</span><span class="p">:</span>
+                    <span class="n">vlans_to_create</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[ -&gt; ] Type the number of each VLAN separated by commas (eg: 5,15,20): &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">vlan</span> <span class="ow">in</span> <span class="n">vlans_to_create</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">vlan</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3968</span><span class="p">,</span> <span class="mi">4048</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">vlan</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4094</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s2">&quot;VLAN_NUMBER&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">vlan</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">__send_commands</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">config_key</span><span class="p">)</span>
+                    <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__send_commands</span><span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">config_key</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[ ! ] There is no valid configuration for &#39;</span><span class="si">{config_key}</span><span class="s2">&#39;.&quot;</span><span class="p">)</span>
+                <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+    <span class="k">def</span> <span class="nf">__send_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">config_key</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Run the commands on the device based on the choosen configuration keyword.</span>
 
 <span class="sd">            Args:</span>
 <span class="sd">                device (:obj: `Device`): The device that will receive the commands.</span>
-<span class="sd">                code (int): The script code choosen to run on thevice.</span>
+<span class="sd">                config_key (int): The configuration key to run based on the &#39;config.json&#39; file.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">variables</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;DEVICE_HOSTNAME&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                     <span class="s2">&quot;DOMAIN_NAME&quot;</span><span class="p">:</span> <span class="n">device</span><span class="o">.</span><span class="n">domain_name</span><span class="p">,</span>
-                     <span class="s2">&quot;ENABLE_PASSWORD&quot;</span><span class="p">:</span> <span class="n">device</span><span class="o">.</span><span class="n">enable_secret</span><span class="p">}</span>
-        <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>  <span class="c1"># keywords that will be replaced if found on &#39;config.json&#39; commands.</span>
-        <span class="n">codes_dict</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;DEFAULT_CONFIG&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;SET_HOSTNAME&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="s1">&#39;SETUP_SSH_ONLY&#39;</span><span class="p">,</span>
-                      <span class="mi">5</span><span class="p">:</span> <span class="s1">&#39;SETUP_TELNET_ONLY&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span> <span class="s1">&#39;SETUP_SSH_TELNET&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span> <span class="s1">&#39;SHOW_INTERFACES_STATUS&#39;</span><span class="p">,</span>
-                      <span class="mi">11</span><span class="p">:</span> <span class="s1">&#39;SHOW_INTERFACES_IP&#39;</span><span class="p">}</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">variables</span><span class="p">[</span><span class="s2">&quot;DEVICE_HOSTNAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;[ -&gt; ] Set hostname: &quot;</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="mi">12</span><span class="p">:</span>
-                <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="n">commands</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">codes_dict</span><span class="p">[</span><span class="n">code</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">commands</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_json</span><span class="p">[</span><span class="n">config_key</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">connection_protocol</span> <span class="o">==</span> <span class="s2">&quot;SSH&quot;</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
-                <span class="n">found_key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">key</span><span class="p">:</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">command</span><span class="p">,</span> <span class="n">keys</span><span class="p">))</span>  <span class="c1"># found commands to be replaced.</span>
+                <span class="n">found_key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">key</span><span class="p">:</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">))</span>
                 <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found_key</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">found_key</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">variables</span><span class="p">[</span><span class="n">found_key</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">))</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__shell</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">found_key</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">found_key</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">sleep</span><span class="p">(</span><span class="mf">0.6</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__shell</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="n">sleep</span><span class="p">(</span><span class="mf">0.6</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
+                <span class="n">found_key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">key</span><span class="p">:</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">command</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys</span><span class="p">))</span>  <span class="c1"># found commands to be replaced.</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found_key</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">found_key</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="n">found_key</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
                     <span class="n">sleep</span><span class="p">(</span><span class="mf">0.6</span><span class="p">)</span>  <span class="c1"># timeout before send another command to prevent errors.</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">))</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
                     <span class="n">sleep</span><span class="p">(</span><span class="mf">0.6</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">code</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">):</span>
-                <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\r</span><span class="s2">[-&gt;] Press enter to continue...&quot;</span><span class="p">)</span>
 
-        <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="Manager.send_commands_over_ssh"><a class="viewcode-back" href="../../index.html#pisco.manager.Manager.send_commands_over_ssh">[docs]</a>    <span class="k">def</span> <span class="nf">send_commands_over_ssh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">code</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot; Run the commands on the tevice over SSH according to code.</span>
-
-<span class="sd">            Args:</span>
-<span class="sd">                device (:obj: `Device`): The device that will receive the commands.</span>
-<span class="sd">                code (int): The script code choosen to run on thevice.</span>
-
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">variables</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;DEVICE_HOSTNAME&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
-                     <span class="s2">&quot;ENABLE_PASSWORD&quot;</span><span class="p">:</span> <span class="n">device</span><span class="o">.</span><span class="n">enable_secret</span><span class="p">,</span>
-                     <span class="s2">&quot;DOMAIN_NAME&quot;</span><span class="p">:</span> <span class="n">device</span><span class="o">.</span><span class="n">domain_name</span><span class="p">}</span>
-        <span class="n">keys</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">variables</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>  <span class="c1"># keywords that will be replaced if found on &#39;config.json&#39; commands.</span>
-        <span class="n">codes_dict</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;DEFAULT_CONFIG&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;SET_HOSTNAME&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="s1">&#39;SETUP_SSH_ONLY&#39;</span><span class="p">,</span>
-                      <span class="mi">5</span><span class="p">:</span> <span class="s1">&#39;SETUP_TELNET_ONLY&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">:</span> <span class="s1">&#39;SETUP_SSH_TELNET&#39;</span><span class="p">,</span> <span class="mi">10</span><span class="p">:</span> <span class="s1">&#39;SHOW_INTERFACES_STATUS&#39;</span><span class="p">,</span>
-                      <span class="mi">11</span><span class="p">:</span> <span class="s1">&#39;SHOW_INTERFACES_IP&#39;</span><span class="p">}</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">config_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
-            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-                <span class="n">variables</span><span class="p">[</span><span class="s2">&quot;DEVICE_HOSTNAME&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;[-&gt;] Set hostname: &quot;</span><span class="p">)</span>
-            <span class="k">elif</span> <span class="n">code</span> <span class="o">==</span> <span class="mi">10</span><span class="p">:</span>
-                <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-            <span class="n">commands</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">codes_dict</span><span class="p">[</span><span class="n">code</span><span class="p">]]</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
-            <span class="k">for</span> <span class="n">command</span> <span class="ow">in</span> <span class="n">commands</span><span class="p">:</span>
-                <span class="n">found_key</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">key</span><span class="p">:</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">command</span><span class="p">,</span> <span class="n">keys</span><span class="p">))</span>
-                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found_key</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__virtual_terminal</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">found_key</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">variables</span><span class="p">[</span><span class="n">found_key</span><span class="p">[</span><span class="mi">0</span><span class="p">]]))</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-                    <span class="n">sleep</span><span class="p">(</span><span class="mf">0.6</span><span class="p">)</span>
-                <span class="k">else</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">__virtual_terminal</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">identify_errors</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-                    <span class="n">sleep</span><span class="p">(</span><span class="mf">0.6</span><span class="p">)</span>
-            <span class="k">if</span> <span class="n">code</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">12</span><span class="p">):</span>
-                <span class="nb">input</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[ -&gt; ] Press enter to continue...&quot;</span><span class="p">)</span>
-        <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span></div>
-
-<div class="viewcode-block" id="Manager.identify_errors"><a class="viewcode-back" href="../../index.html#pisco.manager.Manager.identify_errors">[docs]</a>    <span class="k">def</span> <span class="nf">identify_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__identify_errors</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">device</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; Handle the command output to verify if there is errors based on a dict with some errors keywords</span>
 <span class="sd">            and its descriptions.</span>
 
@@ -271,15 +227,17 @@
 <span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">found_error</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">error</span><span class="p">:</span> <span class="n">error</span> <span class="ow">in</span> <span class="n">output_line</span><span class="p">,</span> <span class="n">errors_keywords</span><span class="p">))</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">found_error</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[ ! ] {errors_dict[found_error[0]]}.&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[ ! ] {errors_dict[found_error[0]]}&quot;</span><span class="p">)</span>
+                <span class="n">auxiliar_functions</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">output_line</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 
-        <span class="n">errors_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;</span><span class="si">% Lo</span><span class="s1">gin invalid&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[!] Invalid VTY login credentials!&quot;</span><span class="p">,</span>
-                       <span class="s1">&#39;% Bad passwords&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[!] Invalid VTY password!&quot;</span><span class="p">,</span>
-                       <span class="s1">&#39;% Bad secrets&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[!] Invalid secret! Can&#39;t configure&quot;</span><span class="p">,</span>
-                       <span class="s1">&#39;% No password set&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[!] No enable password configured on device! Cant run scripts.&quot;</span><span class="p">,</span>
-                       <span class="s1">&#39;Translating&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[!] Username not configured on device. Set a username or leave it blank.&quot;</span><span class="p">}</span>
+        <span class="n">errors_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;</span><span class="si">% Lo</span><span class="s1">gin invalid&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[ ! ] Invalid VTY login credentials!&quot;</span><span class="p">,</span>
+                       <span class="s1">&#39;% Bad passwords&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[ ! ] Invalid VTY password!&quot;</span><span class="p">,</span>
+                       <span class="s1">&#39;% Bad secrets&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[ ! ] Invalid secret! Can&#39;t configure&quot;</span><span class="p">,</span>
+                       <span class="s1">&#39;% No password set&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[ ! ] No enable password configured on device! Cant run scripts.&quot;</span><span class="p">,</span>
+                       <span class="s1">&#39;Translating&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[ ! ] Username not configured on device. Set a username or leave it blank.&quot;</span><span class="p">,</span>
+                       <span class="s1">&#39;number which is out of the range 1..4094&#39;</span><span class="p">:</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">[ ! ] Invalid vlan number!&quot;</span><span class="p">}</span>
         <span class="n">errors_keywords</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">errors_dict</span><span class="p">]</span>
         <span class="k">if</span> <span class="n">device</span><span class="o">.</span><span class="n">connection_protocol</span> <span class="o">==</span> <span class="s1">&#39;TELNET&#39;</span><span class="p">:</span>
             <span class="n">errors_keywords</span> <span class="o">=</span> <span class="p">[</span><span class="n">key</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">errors_dict</span><span class="p">]</span>
@@ -288,10 +246,10 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">__obj_connect</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;no</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
             <span class="n">find_error_on_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__virtual_terminal</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">65535</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__shell</span><span class="o">.</span><span class="n">recv</span><span class="p">(</span><span class="mi">65535</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
             <span class="k">if</span> <span class="s1">&#39;% Do you really want to replace them?&#39;</span> <span class="ow">in</span> <span class="n">line</span> <span class="ow">or</span> <span class="s1">&#39;% You already have RSA keys defined&#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__virtual_terminal</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;no</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-            <span class="n">find_error_on_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></div></div>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__shell</span><span class="o">.</span><span class="n">send</span><span class="p">(</span><span class="sa">b</span><span class="s1">&#39;no</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="n">find_error_on_line</span><span class="p">(</span><span class="n">line</span><span class="p">)</span></div>
 </pre></div>
 
           </div>
