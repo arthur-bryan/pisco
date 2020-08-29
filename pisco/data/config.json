@@ -41,6 +41,8 @@
                         "\binterface vlan VLAN_NUMBER\n",
                         "\bno shutdown\n",
                         "\bend\n",
+                        "\bcopy running-config startup-config\n",
+                        "\b\n",
                         "\b\n"]
         },
 
