@@ -15,7 +15,7 @@ class Manager:
                  "DOMAIN_NAME": None,
                  "VLAN_NUMBER": None}
     keys = list(variables.keys())  # keywords that will be replaced if found on 'config.json' commands.
-    configuration_keywords = ('DEFAULT_CONFIG', 'SET_HOSTNAME', "CREATE_VLAN", 'ACCESS_SSH_ONLY',
+    configuration_keywords = ('DEFAULT_CONFIG', 'SET_HOSTNAME', "CREATE_VLAN", 'DELETE_VLAN','ACCESS_SSH_ONLY',
                               'ACCESS_TELNET_ONLY', 'ACCESS_SSH_TELNET', 'SHOW_INTERFACES_STATUS',
                               'SHOW_INTERFACES_IP')
     config_file = open(CONFIG_FILE_PATH, "r")
@@ -23,6 +23,7 @@ class Manager:
 
     def __init__(self):
         self.__devices = []
+        self.__vlans_to_configure = None
         self.__obj_connect = None
         self.__shell = None
 
@@ -61,6 +62,15 @@ class Manager:
                 except Exception as e:
                     print(f"\n\n{e}")
                     auxiliar_functions.close()
+        auxiliar_functions.close()
+
+    @property
+    def vlans_to_configure(self):
+        return self.__vlans_to_configure
+
+    @vlans_to_configure.setter
+    def vlans_to_configure(self, vlans):
+        self.__vlans_to_configure = vlans
 
     def __login_over_telnet(self, device):
         """ Creates an Telnet client object, then tries to login to the device using its attributes.
@@ -116,7 +126,7 @@ class Manager:
             self.__identify_errors(device)
 
     def __configure(self, device, configurations):
-        """  Start running commands on device if the configurations keys exists on 'confin.json' file.
+        """ Start running commands on device if the configurations keys exists on 'config.json' file.
 
             Args:
                 device (:obj: `Device`): The device to be configured.
@@ -127,14 +137,18 @@ class Manager:
             if config_key in self.configuration_keywords:
                 if config_key == 'SET_HOSTNAME':
                     variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
-                elif config_key == 'CREATE_VLAN':
-                    vlans_to_create = input("\n\n[ -> ] Type the number of each VLAN separated by commas (eg: 5,15,20): ").split(',')
-                    for vlan in vlans_to_create:
+                    self.__send_commands(device, config_key)
+                elif config_key == 'CREATE_VLAN' or config_key == 'DELETE_VLAN':
+                    if self.__vlans_to_configure == None:
+                        print("\n\n[ ! ] You must specify the VLANs to be configured!(see README or documentation.)")
+                        auxiliar_functions.close()
+                    for vlan in self.__vlans_to_configure:
                         if int(vlan) not in range(3968, 4048) and int(vlan) != 4094:
                             self.variables["VLAN_NUMBER"] = vlan
                             self.__send_commands(device, config_key)
-                    auxiliar_functions.close()
-                self.__send_commands(device, config_key)
+                    self.variables["VLAN_NUMBER"] = self.vlans_to_configure[0]
+                else:
+                    self.__send_commands(device, config_key)
             else:
                 print(f"\n\n[ ! ] There is no valid configuration for '{config_key}'.")
                 auxiliar_functions.close()
