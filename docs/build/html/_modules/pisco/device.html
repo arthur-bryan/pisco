@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>pisco.device &#8212; Pisco 0.1.1a documentation</title>
+    <title>pisco.device &#8212; Pisco 0.1.2a documentation</title>
     <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.1.1a',
+        VERSION:     '0.1.2a',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -54,18 +54,32 @@
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__connection_protocol</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__hostname</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__domain_name</span> <span class="o">=</span> <span class="s2">&quot;lan.com&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ip_address</span> <span class="o">=</span> <span class="n">ip_address</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vty_username</span> <span class="o">=</span> <span class="n">vty_username</span> <span class="k">if</span> <span class="n">vty_username</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="k">else</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">vty_password</span> <span class="o">=</span> <span class="n">vty_password</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">enable_secret</span> <span class="o">=</span> <span class="n">enable_secret</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__interfaces</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">hostname</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; The hostname on device when using &#39;SET_HOSTNAME&#39; configuration. &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hostname</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__hostname</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;No hostname to be set!&#39;</span><span class="p">)</span>
+
+    <span class="nd">@hostname</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">hostname</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">hostname</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__hostname</span> <span class="o">=</span> <span class="n">hostname</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">connection_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; str: Specifies the protocol used to remote access (Telnet/SSH). &quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connection_protocol</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connection_protocol</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connection_protocol</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Connection protocol was not set!&#39;</span><span class="p">)</span>
 
     <span class="nd">@connection_protocol</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">connection_protocol</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">protocol</span><span class="p">):</span>
@@ -74,22 +88,19 @@
         <span class="k">elif</span> <span class="n">protocol</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;SSH&#39;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__connection_protocol</span> <span class="o">=</span> <span class="s1">&#39;SSH&#39;</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[ ! ] Invalid protocol: </span><span class="si">{protocol}</span><span class="s2">.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;Invalid protocol: </span><span class="si">{protocol}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">domain_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot; str: The domain name used in some IP configurations like setting up SSH. Default is &#39;lan.com&#39;.&quot;&quot;&quot;</span>
-
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__domain_name</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__domain_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__domain_name</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s1">&#39;Domain name was not set!&#39;</span><span class="p">)</span>
 
     <span class="nd">@domain_name</span><span class="o">.</span><span class="n">setter</span>
-    <span class="k">def</span> <span class="nf">domain_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain</span><span class="p">):</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">__domain_name</span> <span class="o">=</span> <span class="n">domain</span>
-        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot;[ ! ] </span><span class="si">{e}</span><span class="s2">.&quot;</span><span class="p">)</span></div>
-
-
+    <span class="k">def</span> <span class="nf">domain_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">domain_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__domain_name</span> <span class="o">=</span> <span class="n">domain_name</span></div>
 </pre></div>
 
           </div>
