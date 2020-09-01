@@ -43,6 +43,7 @@ The currently avaliable configuration keys are:
 -  'SET\_HOSTNAME': change the device hostname.
 -  'CREATE\_VLAN': create individual or multiples VLANs.
 -  'DELETE\_VLAN': delete individual or multiples VLANs.
+-  'SETUP\_SSH\_ACCESS': setup for SSH access (domain, rsa key...)
 -  'SETUP\_SSH\_ONLY': set the VTY transport input for SSH access only.
 -  'SETUP\_TELNET\_ONLY': set the VTY transport input for TELNET access only.
 -  'SETUP\_SSH\_TELNET': set the VTY transport input for both SSH and Telnet access.
@@ -82,7 +83,7 @@ Configuring various devices:
         device = Device("10.0.0.10", "admin", "cisco", vty_username="admin")
         device.connection_protocol = "ssh"
         manager.add_device(device)
-    manager.configure_devices('DEFAULT_CONFIG', 'SETUP_SSH_TELNET', 'SHOW_INTERFACES_IP')
+    manager.configure_devices('DEFAULT_CONFIG', 'ACESS_SSH_TELNET', 'SHOW_INTERFACES_IP')
 
 
 Indices and tables

@@ -5,13 +5,13 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>Welcome to Pisco’s documentation! &#8212; Pisco 0.1.1a documentation</title>
+    <title>Welcome to Pisco’s documentation! &#8212; Pisco 0.1.2a documentation</title>
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.1.1a',
+        VERSION:     '0.1.2a',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true,
@@ -97,6 +97,12 @@
 <dd><p>str: The domain name used in some IP configurations like setting up SSH. Default is ‘lan.com’.</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="pisco.device.Device.hostname">
+<code class="descname">hostname</code><a class="headerlink" href="#pisco.device.Device.hostname" title="Permalink to this definition">¶</a></dt>
+<dd><p>The hostname on device when using ‘SET_HOSTNAME’ configuration.</p>
+</dd></dl>
+
 </dd></dl>
 
 </div>
@@ -109,6 +115,7 @@
 <li>‘SET_HOSTNAME’: change the device hostname.</li>
 <li>‘CREATE_VLAN’: create individual or multiples VLANs.</li>
 <li>‘DELETE_VLAN’: delete individual or multiples VLANs.</li>
+<li>‘SETUP_SSH_ACCESS’: setup for SSH access (domain, rsa key…)</li>
 <li>‘SETUP_SSH_ONLY’: set the VTY transport input for SSH access only.</li>
 <li>‘SETUP_TELNET_ONLY’: set the VTY transport input for TELNET access only.</li>
 <li>‘SETUP_SSH_TELNET’: set the VTY transport input for both SSH and Telnet access.</li>
@@ -147,7 +154,7 @@
     <span class="n">device</span> <span class="o">=</span> <span class="n">Device</span><span class="p">(</span><span class="s2">&quot;10.0.0.10&quot;</span><span class="p">,</span> <span class="s2">&quot;admin&quot;</span><span class="p">,</span> <span class="s2">&quot;cisco&quot;</span><span class="p">,</span> <span class="n">vty_username</span><span class="o">=</span><span class="s2">&quot;admin&quot;</span><span class="p">)</span>
     <span class="n">device</span><span class="o">.</span><span class="n">connection_protocol</span> <span class="o">=</span> <span class="s2">&quot;ssh&quot;</span>
     <span class="n">manager</span><span class="o">.</span><span class="n">add_device</span><span class="p">(</span><span class="n">device</span><span class="p">)</span>
-<span class="n">manager</span><span class="o">.</span><span class="n">configure_devices</span><span class="p">(</span><span class="s1">&#39;DEFAULT_CONFIG&#39;</span><span class="p">,</span> <span class="s1">&#39;SETUP_SSH_TELNET&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOW_INTERFACES_IP&#39;</span><span class="p">)</span>
+<span class="n">manager</span><span class="o">.</span><span class="n">configure_devices</span><span class="p">(</span><span class="s1">&#39;DEFAULT_CONFIG&#39;</span><span class="p">,</span> <span class="s1">&#39;ACESS_SSH_TELNET&#39;</span><span class="p">,</span> <span class="s1">&#39;SHOW_INTERFACES_IP&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
