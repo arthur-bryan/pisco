@@ -10,7 +10,7 @@
 			"\bexec-timeout 0 0\n",
 			"\bexit\n",
 			"\bline vty 0 4\n",
-                        "\blogging synchronous\n",
+			"\blogging synchronous\n",
 			"\bexec-timeout 0 0\n",
 			"\bend\n",
 			"\bcopy running-config startup-config\n",
@@ -30,39 +30,37 @@
 			"\b\n"]
 	},
 
+	"CREATE_VLAN":
+	{
+		"commands": [
+			"\b\n",
+			"\bconfigure terminal\n",
+			"\bvlan VLAN_NUMBER\n",
+			"\bexit\n",
+			"\binterface vlan VLAN_NUMBER\n",
+			"\bno shutdown\n",
+			"\bend\n",
+			"\bcopy running-config startup-config\n",
+			"\b\n",
+			"\b\n"]
+	},
 
-        "CREATE_VLAN":
-        {
-                "commands": [
-                        "\b\n",
-                        "\bconfigure terminal\n",
-                        "\bvlan VLAN_NUMBER\n",
-                        "\bexit\n",
-                        "\binterface vlan VLAN_NUMBER\n",
-                        "\bno shutdown\n",
-                        "\bend\n",
-                        "\bcopy running-config startup-config\n",
-                        "\b\n",
-                        "\b\n"]
-        },
+	"DELETE_VLAN":
+	{
+		"commands": [
+			"\b\n",
+			"\bconfigure terminal\n",
+			"\binterface vlan VLAN_NUMBER\n",
+			"\bshutdown\n",
+			"\bexit\n",
+			"\bno vlan VLAN_NUMBER\n",
+			"\bend\n",
+			"\bcopy running-config startup-config\n",
+			"\b\n",
+			"\b\n"]
+	},
 
-        "DELETE_VLAN":
-        {
-                "commands": [
-                        "\b\n",
-                        "\bconfigure terminal\n",
-                        "\binterface vlan VLAN_NUMBER\n",
-                        "\bshutdown\n",
-                        "\bexit\n",
-                        "\bno vlan VLAN_NUMBER\n",
-                        "\bend\n",
-                        "\bcopy running-config startup-config\n",
-                        "\b\n",
-                        "\b\n"]
-        },
-
-
-	"SETUP_SSH_ONLY":
+	"SETUP_SSH_ACCESS":
 	{
 		"commands": [
 			"\b\n",
@@ -71,38 +69,37 @@
 			"\bcrypto key generate rsa\n",
 			"\b2048\n",
 			"\bip ssh version 2\n",
-			"\bline vty 0 4\n",
-			"\btransport input ssh\n",
-			"\bexit\n",
-            "\bexit\n",
+			"\bend\n",
 			"\b\n"]
 	},
 
-    "SETUP_TELNET_ONLY":
+	"ACCESS_SSH_ONLY":
+	{
+		"commands": [
+			"\b\n",
+			"\bconfigure terminal\n",
+			"\bline vty 0 4\n",
+			"\btransport input ssh\n",
+			"\bend\n",
+			"\b\n"]
+	},
+
+    "ACCESS_TELNET_ONLY":
     {
         "commands": [
             "\b\n",
             "\bconfigure terminal\n",
-            "\bip domain-name DOMAIN_NAME\n",
-            "\bcrypto key generate rsa\n",
-            "\b2048\n",
-            "\bip ssh version 2\n",
             "\bline vty 0 4\n",
             "\btransport input telnet\n",
-            "\bexit\n",
-            "\bexit\n",
+            "\bend\n",
             "\b\n"]
     },
 
-    "SETUP_SSH_TELNET":
+    "ACCESS_SSH_TELNET":
     {
         "commands": [
             "\b\n",
             "\bconfigure terminal\n",
-            "\bip domain-name DOMAIN_NAME\n",
-            "\bcrypto key generate rsa\n",
-            "\b2048\n",
-            "\bip ssh version 2\n",
             "\bline vty 0 4\n",
             "\btransport input ssh telnet\n",
             "\bexit\n",

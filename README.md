@@ -64,16 +64,17 @@ $ sudo python3 -m pip uninstall pisco
 from pisco.manager import Manager
 from pisco.device import Device
 
-# Create VLANs 10, 20 and 30 on a switch over ssh.
+# Change hostname, configure SSH, set transport input for SSH only and create VLANs 10, 20 and 30 on a switch over telnet.
 
 switch1 = Device("10.0.0.10", "admin", "cisco", vty_username="admin")
-switch1.connection_protocol = "ssh"
-switch1.domain_name = "lab.lan"	# sets the domain name on device.
+switch1.connection_protocol = "telnet"
+switch1.domain_name = "lab.lan"  # the domain name on device will be 'lab.lan' (needed to setup SSH).
+switch1.hostname = 'SW-1'  #  the hostname of the device will be 'SW-1'
 
 manager = Manager()
 manager.add_device(switch1)
 manager.vlans_to_configure = '10', '20', '30' # the number of VLANs to configure (must be set always when configuring VLANs)
-manager.configure_devices('CREATE_VLAN')
+manager.configure_devices('SET_HOSTNAME', 'SETUP_SSH', 'ACCESS_SSH_ONLY', 'CREATE_VLAN')
 ```
 
 #### Configuring various devices:
@@ -82,7 +83,7 @@ manager.configure_devices('CREATE_VLAN')
 from pisco.manager import Manager
 from pisco.device import Device
 
-# Enable Telnet and SSH VTY transport inputs and then show the status of the interfaces.
+# Enable Telnet and SSH VTY transport inputs and then show the status of the interfaces of the devices over SSH.
 
 ips = ['10.0.0.10', '10.0.0.11', '10.0.0.12', '10.0.0.13', '10.0.0.14']
 
@@ -90,10 +91,10 @@ manager = Manager()
 
 for ip in ips:
     device = Device(ip, "admin", "cisco", vty_username="admin")
-    device.connection_protocol = "telnet"   # connection over telnet
+    device.connection_protocol = "ssh"   # connection over telnet
     manager.add_device(device)
 
-manager.configure_devices('DEFAULT_CONFIG', 'SETUP_SSH_TELNET', 'SHOW_INTERFACES_STATUS')	# here the devices won't have the domain name set and default will be "lan.com"
+manager.configure_devices('DEFAULT_CONFIG', 'SETUP_SSH_TELNET', 'SHOW_INTERFACES_STATUS')
 ```
 
 #### You can also retrieve de device credentials from the user at runtime (use modules like getpass when prompting passwords).

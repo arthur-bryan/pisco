@@ -10,13 +10,13 @@ class Manager:
     """ The class that holds the methods used to configure the devices. """
 
     CONFIG_FILE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'config.json')
-    variables = {"DEVICE_HOSTNAME": None,
-                 "ENABLE_PASSWORD": None,
-                 "DOMAIN_NAME": None,
-                 "VLAN_NUMBER": None}
-    keys = list(variables.keys())  # keywords that will be replaced if found on 'config.json' commands.
-    configuration_keywords = ('DEFAULT_CONFIG', 'SET_HOSTNAME', "CREATE_VLAN", 'DELETE_VLAN','ACCESS_SSH_ONLY',
-                              'ACCESS_TELNET_ONLY', 'ACCESS_SSH_TELNET', 'SHOW_INTERFACES_STATUS',
+    # The command variables will receive values that will be replaced when sending 'config.json' commands.
+    COMMAND_VARIABLES = {"DEVICE_HOSTNAME": None,
+                         "ENABLE_PASSWORD": None,
+                         "DOMAIN_NAME": None,
+                         "VLAN_NUMBER": None}
+    CONFIGURATION_KEYWORDS = ('DEFAULT_CONFIG', 'SET_HOSTNAME', "CREATE_VLAN", 'DELETE_VLAN', 'SETUP_SSH_ACCESS',
+                              'ACCESS_SSH_ONLY', 'ACCESS_TELNET_ONLY', 'ACCESS_SSH_TELNET', 'SHOW_INTERFACES_STATUS',
                               'SHOW_INTERFACES_IP')
     config_file = open(CONFIG_FILE_PATH, "r")
     config_json = json.load(config_file)
@@ -26,6 +26,7 @@ class Manager:
         self.__vlans_to_configure = None
         self.__obj_connect = None
         self.__shell = None
+        self.__timeout_between_commands = 0.35
 
     def add_device(self, device):
         """ Add the device (obj) to the list of devices to be configured.
@@ -39,8 +40,8 @@ class Manager:
     def configure_devices(self, *args):
         """ Starts the configuration of devices on the devices list. """
         for _, device in enumerate(self.__devices):
-            self.variables['ENABLE_PASSWORD'] = device.enable_secret
-            self.variables['DOMAIN_NAME'] = device.domain_name
+            self.COMMAND_VARIABLES['ENABLE_PASSWORD'] = device.enable_secret
+            self.COMMAND_VARIABLES['DOMAIN_NAME'] = device.domain_name
             auxiliar_functions.clear()
             print(f"\n[ + ] CONFIGURING  THE {_+1}º DEVICE...\n")
             if len(args) < 1:
@@ -50,7 +51,7 @@ class Manager:
                 try:
                     self.__login_over_telnet(device)
                     self.__configure(device, args)
-                    self.__obj_connnect.close()
+                    self.__obj_connect.close()
                 except Exception as e:
                     print(f"\n\n{e}")
                     auxiliar_functions.close()
@@ -66,7 +67,10 @@ class Manager:
 
     @property
     def vlans_to_configure(self):
-        return self.__vlans_to_configure
+        if self.__vlans_to_configure is not None:
+            return self.__vlans_to_configure
+        else:
+            raise AttributeError('No VLAN was set!')
 
     @vlans_to_configure.setter
     def vlans_to_configure(self, vlans):
@@ -89,15 +93,15 @@ class Manager:
             if device.vty_username != "":
                 self.__obj_connect.read_until(b"Username:", 2)
                 self.__obj_connect.write(device.vty_username.encode('ascii') + b"\n")
-                sleep(0.5)
+                sleep(self.__timeout_between_commands)
             self.__obj_connect.read_until(b"Password:", 2)
             self.__obj_connect.write(device.vty_password.encode('ascii') + b"\n")
-            sleep(0.5)
+            sleep(self.__timeout_between_commands)
             self.__identify_errors(device)
             self.__obj_connect.write(b"enable\n")
             self.__obj_connect.read_until(b"Password:", 2)
             self.__obj_connect.write(device.enable_secret.encode('ascii') + b"\n")
-            sleep(0.5)
+            sleep(self.__timeout_between_commands)
             self.__identify_errors(device)
 
     def __login_over_ssh(self, device):
@@ -112,7 +116,7 @@ class Manager:
         self.__obj_connect.set_missing_host_key_policy(AutoAddPolicy())
         try:
             self.__obj_connect.connect(device.ip_address, 22, device.vty_username, device.vty_password)
-            self.__shell = self.__obj_connect.invoke_shell() # Opens a shell to run commands.
+            self.__shell = self.__obj_connect.invoke_shell()  # Opens a shell to run commands.
         except Exception as error:
             print(f"[ ! ] {error}")
             self.__obj_connect.close()
@@ -120,9 +124,9 @@ class Manager:
         else:
             self.__identify_errors(device)
             self.__shell.send(b"enable\n")
-            sleep(0.5)
+            sleep(self.__timeout_between_commands)
             self.__shell.send(device.enable_secret.encode() + b"\n")
-            sleep(0.5)
+            sleep(self.__timeout_between_commands)
             self.__identify_errors(device)
 
     def __configure(self, device, configurations):
@@ -134,57 +138,60 @@ class Manager:
 
         """
         for config_key in configurations:
-            if config_key in self.configuration_keywords:
+            if config_key in self.CONFIGURATION_KEYWORDS:
                 if config_key == 'SET_HOSTNAME':
-                    variables["DEVICE_HOSTNAME"] = input("[->] Set hostname: ")
+                    self.COMMAND_VARIABLES["DEVICE_HOSTNAME"] = device.hostname
                     self.__send_commands(device, config_key)
                 elif config_key == 'CREATE_VLAN' or config_key == 'DELETE_VLAN':
-                    if self.__vlans_to_configure == None:
+                    if self.__vlans_to_configure is None:
                         print("\n\n[ ! ] You must specify the VLANs to be configured!(see README or documentation.)")
                         auxiliar_functions.close()
                     for vlan in self.__vlans_to_configure:
                         if int(vlan) not in range(3968, 4048) and int(vlan) != 4094:
-                            self.variables["VLAN_NUMBER"] = vlan
+                            self.COMMAND_VARIABLES["VLAN_NUMBER"] = vlan
                             self.__send_commands(device, config_key)
-                    self.variables["VLAN_NUMBER"] = self.vlans_to_configure[0]
+                    self.COMMAND_VARIABLES["VLAN_NUMBER"] = self.vlans_to_configure[0]
                 else:
                     self.__send_commands(device, config_key)
             else:
                 print(f"\n\n[ ! ] There is no valid configuration for '{config_key}'.")
                 auxiliar_functions.close()
 
-
-    def __send_commands(self, device, config_key):
+    def __send_commands(self, device, config_keyword):
         """ Run the commands on the device based on the choosen configuration keyword.
 
             Args:
                 device (:obj: `Device`): The device that will receive the commands.
-                config_key (int): The configuration key to run based on the 'config.json' file.
+                config_keyword (int): The configuration key to run based on the 'config.json' file.
 
         """
-        commands = list(self.config_json[config_key].values())[0]
+        commands = list(self.config_json[config_keyword].values())[0]
         if device.connection_protocol == "SSH":
             for command in commands:
-                found_key = list(filter(lambda key: key in command, self.keys))
-                if len(found_key) > 0:
-                    self.__shell.send(command.replace(found_key[0], self.variables[found_key[0]]).encode('ascii'))
+                found_variables = tuple(filter(lambda key: key in command, self.COMMAND_VARIABLES))
+                if len(found_variables) > 0:
+                    for variable in found_variables:
+                        command = command.replace(variable, self.COMMAND_VARIABLES[variable])
+                    self.__shell.send(command.encode('ascii'))
                     self.__identify_errors(device)
-                    sleep(0.6)
+                    sleep(self.__timeout_between_commands)
                 else:
-                    self.__shell.send(command.encode())
+                    self.__shell.send(command.encode('ascii'))
                     self.__identify_errors(device)
-                    sleep(0.6)
+                    sleep(self.__timeout_between_commands)
         else:
             for command in commands:
-                found_key = list(filter(lambda key: key in command, self.keys))  # found commands to be replaced.
-                if len(found_key) > 0:
-                    self.__obj_connect.write(command.replace(found_key[0], self.variables[found_key[0]]).encode('ascii'))
+                found_variables = tuple(filter(lambda key: key in command, self.COMMAND_VARIABLES))
+                if len(found_variables) > 0:
+                    for variable in found_variables:
+                        command = command.replace(variable, self.COMMAND_VARIABLES[variable])
+                    self.__obj_connect.write(command.encode('ascii'))
                     self.__identify_errors(device)
-                    sleep(0.6)  # timeout before send another command to prevent errors.
+                    sleep(self.__timeout_between_commands)
                 else:
                     self.__obj_connect.write(command.encode('ascii'))
                     self.__identify_errors(device)
-                    sleep(0.6)
+                    sleep(self.__timeout_between_commands)
 
     def __identify_errors(self, device):
         """ Handle the command output to verify if there is errors based on a dict with some errors keywords

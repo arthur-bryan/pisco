@@ -14,18 +14,32 @@ class Device:
 
         """
         self.__connection_protocol = None
+        self.__hostname = None
         self.__domain_name = "lan.com"
         self.ip_address = ip_address
         self.vty_username = vty_username if vty_username != "" else ""
         self.vty_password = vty_password
         self.enable_secret = enable_secret
-        self.__interfaces = []
+
+    @property
+    def hostname(self):
+        """ The hostname on device when using 'SET_HOSTNAME' configuration. """
+        if self.__hostname is not None:
+            return self.__hostname
+        else:
+            raise AttributeError('No hostname to be set!')
+
+    @hostname.setter
+    def hostname(self, hostname):
+        self.__hostname = hostname
 
     @property
     def connection_protocol(self):
         """ str: Specifies the protocol used to remote access (Telnet/SSH). """
-
-        return self.__connection_protocol
+        if self.__connection_protocol is not None:
+            return self.__connection_protocol
+        else:
+            raise AttributeError('Connection protocol was not set!')
 
     @connection_protocol.setter
     def connection_protocol(self, protocol):
@@ -34,19 +48,16 @@ class Device:
         elif protocol.upper() == 'SSH':
             self.__connection_protocol = 'SSH'
         else:
-            raise ValueError(f"[ ! ] Invalid protocol: {protocol}.")
+            raise ValueError(f"Invalid protocol: {protocol}")
 
     @property
     def domain_name(self):
         """ str: The domain name used in some IP configurations like setting up SSH. Default is 'lan.com'."""
-
-        return self.__domain_name
+        if self.__domain_name is not None:
+            return self.__domain_name
+        else:
+            raise AttributeError('Domain name was not set!')
 
     @domain_name.setter
-    def domain_name(self, domain):
-        try:
-            self.__domain_name = domain
-        except Exception as e:
-            print(f"[ ! ] {e}.")
-
-
+    def domain_name(self, domain_name):
+        self.__domain_name = domain_name
