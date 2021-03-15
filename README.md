@@ -1,11 +1,10 @@
+![COVER](https://user-images.githubusercontent.com/34891953/111230192-f925fd00-85c5-11eb-9f8d-bcb383c24eb7.png)
 [![Open Source](https://img.shields.io/badge/-Open%20Source%3F%20Yes%21-3066be?logo=Github&logoColor=white&link=https://github.com/arthur-bryan/pisco)](https://github.com/arthur-bryan/pisco)
 [![Status Badge](https://img.shields.io/badge/status-development-3066be)](https://github.com/arthur-bryan/pisco)
 ![GitHub](https://img.shields.io/github/license/arthur-bryan/pisco?color=blue)
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/arthur-bryan/pisco)](https://github.com/arthur-bryan/pisco/tags)
 [![Python Badge](https://img.shields.io/badge/-Python%203.7+-3066be?logo=Python&logoColor=white&link=https://www.python.org/)](https://www.python.org/)
 ![GitHub repo size](https://img.shields.io/github/repo-size/arthur-bryan/pisco)
-
-![pisco](https://usr-images.githubusercontent/34891953/91322086-b15c9700-e795-11ea-8a30-e7ef610baeef.GIF)
 
 # Pisco
 ##### Scripts to automate the configuration of Cisco devices.
